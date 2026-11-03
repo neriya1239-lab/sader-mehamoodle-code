@@ -8,6 +8,7 @@ cd "$(dirname "$0")" || exit 1
 TEAM="${SADER_TEAM_ID:-${TEAM_ID:-}}"
 [ -n "$TEAM" ] || { echo "חסר Team ID של Apple: צרו בתיקייה בנייה קובץ signing.local.sh עם השורה TEAM_ID=XXXXXXXXXX"; exit 1; }
 NAME="MoodleSorter"; OUT="$HOME/SaderSafari"; LOG="$OUT/upload.log"
+VER="$(grep -o '"version": *"[0-9.]*"' safari-extension/manifest.json | grep -o '[0-9][0-9.]*')"; VER="${VER:-1.0}"   # the App Store version = the extension's
 PROJ="$OUT/$NAME/$NAME.xcodeproj"; ARCH="$OUT/$NAME.xcarchive"
 : > "$LOG"
 say() { echo "$@"; echo "$@" >> "$LOG"; }
@@ -17,12 +18,12 @@ BUILD="${1:-}"
 if [ -z "$BUILD" ]; then
   LAST="$(cat "$OUT/last_build" 2>/dev/null || echo 0)"; BUILD=$((LAST + 1))
 fi
-say "== העלאה ל-App Store: גרסה 1.0, build $BUILD ($(date)) =="
+say "== העלאה ל-App Store: גרסה $VER, build $BUILD ($(date)) =="
 SCHEME="$NAME (iOS)"
 say "1/2 בונה ארכיון..."
 rm -rf "$ARCH"
 xcodebuild -project "$PROJ" -scheme "$SCHEME" -configuration Release -destination 'generic/platform=iOS' \
-  -archivePath "$ARCH" -allowProvisioningUpdates DEVELOPMENT_TEAM="$TEAM" CURRENT_PROJECT_VERSION="$BUILD" MARKETING_VERSION="1.0" TARGETED_DEVICE_FAMILY=2 \
+  -archivePath "$ARCH" -allowProvisioningUpdates DEVELOPMENT_TEAM="$TEAM" CURRENT_PROJECT_VERSION="$BUILD" MARKETING_VERSION="$VER" TARGETED_DEVICE_FAMILY=2 \
   archive >> "$LOG" 2>&1 || fail "הארכיון נכשל (חתימה? אולי צריך להתחבר ב-Xcode ← Settings ← Accounts)."
 cat > "$OUT/export.plist" <<PL
 <?xml version="1.0" encoding="UTF-8"?>
@@ -39,5 +40,5 @@ xcodebuild -exportArchive -archivePath "$ARCH" -exportOptionsPlist "$OUT/export.
   -allowProvisioningUpdates >> "$LOG" 2>&1 || fail "ההעלאה נכשלה. אם כתוב ביומן שהאפליקציה לא קיימת: צריך ליצור אותה קודם ב-App Store Connect."
 echo "$BUILD" > "$OUT/last_build"
 say ""
-say "✅ הועלה (build $BUILD). בעוד 10–30 דקות הוא יופיע ב-App Store Connect, באפליקציה ← TestFlight / גרסה 1.0 ← Build."
+say "✅ הועלה (build $BUILD). בעוד 10–30 דקות הוא יופיע ב-App Store Connect, באפליקציה ← TestFlight / גרסה $VER ← Build."
 read -t 600 -n 1 -s -r -p "אפשר לסגור את החלון."; echo ""
