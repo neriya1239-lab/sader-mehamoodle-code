@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><title>סדר מהמודל – התחל כאן</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font:17px Arial,sans-serif;max-width:760px;margin:28px auto;padding:0 16px;line-height:1.65;color:#111;background:#fff}
+h1{color:#0b4f8a} h2{background:#eef4fa;border-radius:8px;padding:6px 12px;margin-top:34px} h3{margin:22px 0 4px}
+table{border-collapse:collapse;width:100%;margin:8px 0} td,th{border:1px solid #ccd;padding:5px 8px;vertical-align:top;text-align:start} th{background:#f4f6f8}
+code{background:#f2f2f2;border-radius:4px;padding:1px 5px;font-size:15px} .en{text-align:left;margin-top:40px;border-top:2px solid #ddd}
+.ver{color:#777;font-size:13px;margin-top:40px}
+pre.tree{background:#f7f9fb;border:1px solid #dde;border-radius:8px;padding:10px 14px;font:15px/1.5 Consolas,Menlo,monospace;direction:rtl;text-align:right;white-space:pre;overflow-x:auto}
+details{border:1px solid #dde;border-radius:8px;padding:6px 12px;margin:14px 0} summary{cursor:pointer;font-weight:bold;font-size:18px}
+.step{background:#fffbe8;border-right:4px solid #e0b000;padding:6px 10px;border-radius:4px}
+@media (max-width:600px){body{font-size:16px;margin:12px auto} h2{font-size:20px} td,th{padding:4px 5px}}
+</style></head><body><div>
+<h1>סדר מהמודל – התחל כאן</h1>
+<p>הכלי עושה הכל לבד:</p>
+<ul>
+<li><b>מוריד</b> כל לילה את הקבצים החדשים מהמודל.</li>
+<li><b>מסדר</b> אותם בתיקיות: תיקייה לכל קורס, ובתוכה הרצאות, תרגולים, שיעורי בית, מבחנים.</li>
+</ul>
+<p>מתקינים פעם אחת, בערך 5 דקות. מאותו רגע לא צריך לעשות כלום.</p>
+<p><b>מה צריך:</b> Windows 10/11 או Mac עם שבב של Apple, הדפדפן <b>Google Chrome</b>, וחשבון במודל.</p>
+<p><b>לא רק אריאל:</b> הכלי עובד בכל אוניברסיטה ומכללה שיש בה Moodle. בהתקנה בוחרים את המוסד מרשימה, ואם הוא לא ברשימה מקלידים את כתובת המודל שלו. ראו <a href="#other">אוניברסיטה או מכללה אחרת</a>.</p>
+<p><b>בעמוד הזה:</b></p>
+<ol start="1">
+<li><a href="#install">התקנה</a> (שלבים 0–2)</li>
+<li><a href="#use">מה קורה מעכשיו</a></li>
+<li><a href="#settings">הגדרות, הפעלה וכיבוי</a></li>
+<li><a href="#other">אוניברסיטה או מכללה אחרת</a></li>
+<li><a href="#layout">איך הקבצים מסודרים</a></li>
+<li><a href="#faq">שאלות נפוצות</a></li>
+<li><a href="#appendix">נספח טכני</a></li>
+</ol>
+<p>יש כאן קבצים ל-Windows (בתיקייה <b>Windows</b>) וגם למק (בתיקייה <b>Mac</b>). משתמשים רק בקבצים של המחשב שלכם.</p>
+<h2 id="install">שלב 0: מחלצים את ה-ZIP לתיקייה מסמכים</h2>
+<ol start="1">
+<li>Windows: קליק ימני על ה-ZIP ← <b>חלץ הכול</b> ← <b>עיון</b> ← <b>מסמכים</b> ← <b>חלץ</b>. Mac: לחיצה כפולה על ה-ZIP, וגוררים את <b>סדר מהמודל</b> אל מסמכים.</li>
+<li>נכנסים לתיקייה <b>סדר מהמודל</b>.</li>
+</ol>
+<p><b>למה מסמכים?</b> הסידור משתמש בתיקייה <b>סדר מהמודל</b> גם אחר כך. אל תשאירו אותה בהורדות, ואל תמחקו אותה.</p>
+<p><b>מה יש בתיקייה:</b></p>
+<table>
+<tr><th>קובץ</th><th>מה הוא עושה</th></tr>
+<tr><td><b>התחל כאן</b></td><td>המדריך הזה</td></tr>
+<tr><td><b>התקנת סידור אוטומטי</b></td><td>ההתקנה (פעם אחת)</td></tr>
+<tr><td><b>הגדרות</b></td><td>לשנות לאן הקבצים הולכים ואיך הם מסודרים</td></tr>
+<tr><td><b>סדר הורדות</b></td><td>סידור ידני (לא חובה)</td></tr>
+<tr><td><b>ביטול סידור אחרון</b></td><td>מחזיר את הסידור האחרון לתיקיית ההורדות (שואל קודם)</td></tr>
+<tr><td><b>הסרת סידור אוטומטי</b></td><td>מבטל את הסידור ברקע</td></tr>
+<tr><td><b>מערכת</b></td><td>התוכנה עצמה. לא צריך לגעת</td></tr>
+</table>
+<h2>שלב 1: ההתקנה</h2>
+<ol start="1">
+<li>לחיצה כפולה על <b>התקנת סידור אוטומטי</b> בתיקייה של המחשב שלכם (<b>Windows</b> או <b>Mac</b>).</li>
+<li><b>אם מופיעה אזהרה</b> (רק בפעם הראשונה):</li>
+</ol>
+<ul>
+<li>Windows: "Windows protected your PC" ← <b>More info</b> ← <b>Run anyway</b>. חלון "אזהרת אבטחה" ← <b>הפעל</b>.</li>
+<li>Mac: "Apple could not verify" ← <b>סיום</b>, ואז הגדרות המערכת ← פרטיות ואבטחה ← <b>"פתח בכל זאת"</b>.</li>
+</ul>
+<ol start="3">
+<li>נפתח חלון עם <b>6 שאלות</b>. בכל שאלה מקלידים מספר ולוחצים <b>Enter</b>. רק <b>Enter</b> = ברירת המחדל (מומלץ):</li>
+</ol>
+<ul>
+<li><b>לאן לשים את הקורסים?</b> 1 = תיקייה <b>מודל</b> בתוך מסמכים. 2 = תיקייה אחרת (אפשר לגרור תיקייה לחלון).</li>
+<li><b>איך לסדר?</b> 1 = קורס ← סוג. הסבר בהמשך, ב"איך הקבצים מסודרים".</li>
+<li><b>לשנות שמות של תיקיות הסוג?</b> בדרך כלל לא: Enter.</li>
+<li><b>שמות הקבצים?</b> 1 = כמו במודל. 2 = מנוקים (בלי _ ו-%20).</li>
+<li><b>קבצים מהמודל שכבר יש לכם?</b> 1 = כן (מומלץ): מחפש אותם ומעביר לתיקיית הקורס, במקום להוריד עותק נוסף. ראו <a href="#faq">שאלות נפוצות</a>.</li>
+<li><b>באיזו אוניברסיטה?</b> 1 = אריאל. 2 = אחרת: מקלידים את כתובת המודל (למשל <code dir="auto">moodle.bgu.ac.il/moodle</code>).</li>
+</ul>
+<ol start="4">
+<li>במק: אם macOS שואל אם לאפשר ל<b>סדר מהמודל</b> גישה לתיקיות: <b>אישור</b>.</li>
+</ol>
+<p><b>מה תראו:</b> "✅ הסידור האוטומטי הותקן ופועל", ו-Chrome נפתח בדף ההתחברות של המודל.</p>
+<h2>שלב 2: ב-Chrome (פעם אחת)</h2>
+<ol start="1">
+<li><b>Windows:</b> Chrome מציג <b>"נוסף תוסף חדש"</b> (סדר מהמודל), בחלון קטן או בתפריט ⋮ למעלה. לוחצים <b>הפעלת התוסף</b> (Enable extension). לא מופיע? סוגרים את Chrome לגמרי ופותחים שוב.</li>
+</ol>
+<p><b>Mac:</b> בלשונית של <b>חנות Chrome</b> שנפתחה לוחצים <b>הוספה ל-Chrome</b> ואז <b>הוספת התוסף</b> (macOS לא מאפשר לתוכנות להוסיף תוסף בעצמן).</p>
+<ol start="2">
+<li>נפתח דף ההגדרות של התוסף: בוחרים את <b>האוניברסיטה או המכללה</b> ולוחצים <b>שמירה</b>. לא ברשימה? בוחרים <b>אחר</b> ומקלידים את כתובת המודל.</li>
+<li>בדף המודל שנפתח: <b>מתחברים</b> כרגיל. Chrome זוכר את ההתחברות.</li>
+<li>מומלץ: לוחצים על סמל הפאזל 🧩 ליד שורת הכתובת, ועל הנעץ ליד <b>סדר מהמודל</b>. כך הסמל שלו תמיד גלוי.</li>
+</ol>
+<p><b>זהו, ההתקנה נגמרה.</b></p>
+<h2 id="use">מה קורה מעכשיו</h2>
+<ul>
+<li><b>אחרי ההתחברות</b> מתבצעת ההורדה הראשונה: כל הקבצים של הקורסים מהסמסטר הנוכחי. זה יכול לקחת כמה דקות.</li>
+<li><b>כל לילה ב-1:00</b> התוסף מוריד רק את הקבצים <b>החדשים</b>, בטאב ברקע שנסגר לבד.</li>
+<li><b>הסידור</b> מעביר אותם לתיקיות, ומציג הודעה בפינת המסך, למשל: <b>"סודרו 3 קבצים: פיזיקה 1 (3)"</b>.</li>
+<li><b>סמסטר חדש:</b> הקורסים החדשים מצטרפים לבד, כולל סמסטר קיץ. קורסים מסמסטרים קודמים לא יורדים מחדש.</li>
+<li><b>קובץ שכבר ירד לא יורד שוב,</b> גם אם מחקתם אותו או שיניתם לו שם.</li>
+</ul>
+<p><b>מה צריך כדי שזה ירוץ:</b> שהמחשב יהיה דלוק ו-Chrome פתוח (גם ממוזער). היה כבוי ב-1:00? ההורדה תרוץ כמה דקות אחרי שפותחים את Chrome.</p>
+<p><b>רוצים להוריד עכשיו, בלי לחכות ללילה?</b> קליק ימני על סמל <b>סדר מהמודל</b> ← <b>אפשרויות</b> ← <b>להוריד עכשיו</b>.</p>
+<p><b>רוצים לבחור בעצמכם קורסים או קבצים?</b> נכנסים למודל ולוחצים על סמל <b>סדר מהמודל</b>. נפתח חלון:</p>
+<ul>
+<li>בדף <b>"הקורסים שלי"</b>: מסמנים קורסים ← <b>המשך</b> ← מסמנים קבצים ← <b>הורד</b>. הבחירה נשמרת, וההורדה הלילית ממשיכה ממנה.</li>
+<li>מתוך דף של קורס: מגיעים ישר לקבצים שלו.</li>
+<li><b>⚙ (מה לא להוריד):</b> סוגי קבצים (למשל סרטונים), קבצים גדולים מ-X MB, קבצים עם מילים מסוימות בשם.</li>
+</ul>
+<p><b>המודל ביקש להתחבר מחדש?</b> תופיע הודעה <b>"צריך להתחבר למודל"</b>. לוחצים עליה, מתחברים, וההורדה ממשיכה מיד.</p>
+<h2 id="settings">הגדרות, הפעלה וכיבוי</h2>
+<p><b>הדרך המהירה לתיקייה סדר מהמודל:</b> Windows: מקש <b>Windows</b> ← <b>סדר מהמודל</b> ← <b>Enter</b>. Mac: <b>Cmd+רווח</b> ← <b>סדר מהמודל</b> ← <b>Enter</b>.</p>
+<table>
+<tr><th>רוצים...</th><th>איך</th></tr>
+<tr><td>לשנות <b>לאן</b> הקבצים הולכים ו<b>איך</b> הם מסודרים</td><td>לחיצה כפולה על <b>הגדרות</b> בתיקייה <b>סדר מהמודל</b>. השינוי נקלט מיד.</td></tr>
+<tr><td>להחליף <b>אוניברסיטה</b> (או אתר מודל)</td><td>קליק ימני על סמל <b>סדר מהמודל</b> ב-Chrome ← <b>אפשרויות</b> ← בוחרים מהרשימה ← <b>שמירה</b>.</td></tr>
+<tr><td>לשנות את <b>שעת</b> ההורדה הלילית</td><td>קליק ימני על סמל <b>סדר מהמודל</b> ב-Chrome ← <b>אפשרויות</b> ← <b>בשעה</b> ← <b>שמירה</b>.</td></tr>
+<tr><td><b>להוריד עכשיו</b></td><td>קליק ימני על הסמל ← <b>אפשרויות</b> ← <b>להוריד עכשיו</b>.</td></tr>
+<tr><td>לבחור <b>קורסים</b> או <b>קבצים</b></td><td>בתוך המודל לוחצים על סמל <b>סדר מהמודל</b>. הבחירה נשמרת להורדה הלילית.</td></tr>
+<tr><td><b>לא</b> להוריד סרטונים, קבצים גדולים או מילים מסוימות</td><td>בחלון של התוסף במודל ← <b>⚙</b>.</td></tr>
+<tr><td><b>להפסיק</b> את ההורדה הלילית לזמן מה</td><td>קליק ימני על הסמל ← <b>אפשרויות</b> ← מבטלים את <b>"להוריד לבד כל לילה"</b> ← <b>שמירה</b>. מחזירים באותה דרך.</td></tr>
+<tr><td><b>לכבות</b> את התוסף לגמרי</td><td>בשורת הכתובת: <code dir="auto">chrome://extensions</code> ← מכבים את המתג של <b>סדר מהמודל</b>. מדליקים באותה דרך.</td></tr>
+<tr><td><b>להפסיק</b> את הסידור ברקע</td><td>לחיצה כפולה על <b>הסרת סידור אוטומטי</b>. ההגדרות נשמרות. מחזירים: לחיצה כפולה על <b>התקנת סידור אוטומטי</b>.</td></tr>
+<tr><td><b>להסיר</b> הכל</td><td>ראו <a href="#faq">איך מסירים</a>.</td></tr>
+</table>
+<p><b>אחרי הפעלה מחדש של המחשב:</b> לא צריך לעשות כלום.</p>
+<ul>
+<li>הסידור עולה לבד עם המחשב, בשקט וברקע.</li>
+<li>התוסף עובד כש-Chrome פתוח. אם ב-1:00 Chrome היה סגור, ההורדה רצה כמה דקות אחרי שפותחים אותו.</li>
+</ul>
+<h2 id="other">אוניברסיטה או מכללה אחרת</h2>
+<p>הכלי נבנה באוניברסיטת אריאל, ועובד בכל אתר Moodle.</p>
+<ul>
+<li><b>ברשימה כבר יש:</b> אריאל, בן-גוריון, בר-אילן, הטכניון, האוניברסיטה הפתוחה, המרכז האקדמי לב (JCT), עזריאלי, SCE, המכללה למינהל, אחוה, כנרת, רופין, גליל מערבי ולוינסקי-וינגייט.</li>
+<li><b>המוסד שלכם לא ברשימה?</b> בדף ההגדרות של התוסף בוחרים <b>אחר</b>, ומקלידים את הכתובת שמופיעה בשורת הכתובת כשאתם במודל (למשל <code dir="auto"><a href="https://moodle.example.ac.il">https://moodle.example.ac.il</a></code>). Chrome ישאל אם לאפשר לתוסף גישה לאתר הזה: <b>אישור</b>. התוסף מקבל גישה לאתר הזה בלבד.</li>
+<li><b>אילו קורסים יורדים:</b> באריאל, לפי שם הקורס (למשל <code dir="auto">_תשפז_א</code>). בשאר המוסדות, הקורסים שהמודל עצמו מציג כ<b>"בתהליך"</b> (In progress). תמיד אפשר לבחור בעצמכם: בתוך המודל לוחצים על סמל התוסף ומסמנים קורסים. הבחירה נשמרת להורדה הלילית.</li>
+<li><b>המוסד שלכם מחליף כתובת כל שנה</b> (למשל moodle25 ← moodle26)? בתחילת השנה בוחרים שוב ב<b>אפשרויות</b> את הכתובת החדשה.</li>
+<li><b>ידני, בלי הגדרות:</b> בכל אתר Moodle אפשר להיכנס, ללחוץ על סמל התוסף ולהוריד.</li>
+</ul>
+<h2 id="layout">איך הקבצים מסודרים</h2>
+<p>כך נראית תיקיית הקורסים (עם ברירות המחדל):</p>
+<pre class="tree">📁 מסמכים
+   📁 מודל
+      📁 פיזיקה 1
+         📁 הרצאות       ← 2 - Motion in 1D.pdf
+         📁 תרגולים      ← תרגול 3.pdf
+         📁 שיעורי בית   ← HW1.pdf
+         📁 מבחנים       ← מבחן 2023 מועד א.pdf
+         📁 אחר          ← תמונה.png
+      📁 אלגברה לינארית 1
+         📁 הרצאות</pre>
+<p><b>שם תיקיית הקורס</b> נקבע כך (הראשון שמתאים):</p>
+<ol start="1">
+<li>שם שכתבתם לקורס בחלון של התוסף (או בהגדרות המתקדמות, ראו נספח).</li>
+<li>תיקייה שכבר קיימת אצלכם, ששמה מופיע בשם הקורס במודל. למשל תיקייה <b>פיזיקה 1</b> תקבל את הקורס "פיזיקה 1-מכניקה".</li>
+<li>אחרת: שם הקורס במודל, בלי סוגריים ובלי "-תרגיל". כך הקורס והתרגול שלו נכנסים לאותה תיקייה.</li>
+</ol>
+<p><b>תיקיית הסוג</b> נקבעת לפי מילים בשם הקובץ ובשם הנושא במודל:</p>
+<table>
+<tr><th>סוג</th><th>מילים לדוגמה</th></tr>
+<tr><td>מבחנים</td><td>מבחן, בחינה, מועד, exam</td></tr>
+<tr><td>סילבוס</td><td>סילבוס, syllabus, נוסחאות</td></tr>
+<tr><td>מטלות</td><td>מטלה, assignment (וגם כל קובץ ממטלה במודל)</td></tr>
+<tr><td>שיעורי בית</td><td>תרגיל בית, שיעורי בית, hw</td></tr>
+<tr><td>תרגולים</td><td>תרגול, תרגיל, cw, tutorial</td></tr>
+<tr><td>הרצאות</td><td>הרצאה, שיעור, lecture, מצגת</td></tr>
+<tr><td>אחר</td><td>כל מה שלא התאים</td></tr>
+</table>
+<p>הרשימה המלאה בנספח למטה.</p>
+<p><b>דוגמה מלאה:</b> במודל יש קורס בשם "פיזיקה 1-מכניקה (תשפ"ז)". בנושא "שבוע 2" יש קובץ <b>HW2.pdf</b>.</p>
+<ul>
+<li>שם הקורס בלי הסוגריים: <b>פיזיקה 1-מכניקה</b>. אם יש לכם כבר תיקייה <b>פיזיקה 1</b>, הקובץ נכנס אליה. אם אין, תיפתח תיקייה חדשה בשם <b>פיזיקה 1-מכניקה</b>.</li>
+<li>בשם הקובץ יש "HW", כלומר שיעורי בית.</li>
+<li>התוצאה: <b>מודל ← פיזיקה 1 ← שיעורי בית ← HW2.pdf</b>.</li>
+</ul>
+<p><b>איך משנים:</b> לחיצה כפולה על <b>הגדרות</b>. אפשר לשנות:</p>
+<ul>
+<li><b>איפה</b> תיקיית הקורסים.</li>
+<li><b>איך לסדר:</b> קורס ← סוג, קורס בלבד, סמסטר ← קורס ← סוג, או לפי שמות הנושאים במודל.</li>
+<li><b>שמות</b> של תיקיות הסוג, ושמות הקבצים.</li>
+<li><b>שם לקורס מסוים:</b> כותבים אותו בחלון של התוסף, בשדה ליד הקורס.</li>
+</ul>
+<p>השינוי נקלט מיד.</p>
+<h2>ביטול סידור</h2>
+<p>סידרתם משהו בטעות? לחיצה כפולה על <b>ביטול סידור אחרון</b>.</p>
+<ul>
+<li>מופיעה רשימה של הקבצים שהסידור האחרון העביר, ושאלה אם להחזיר אותם.</li>
+<li><b>כן</b>: הם חוזרים לתיקיית ההורדות, כמו שהיו. <b>לא</b>: שום דבר לא משתנה.</li>
+</ul>
+<h2 id="faq">שאלות נפוצות</h2>
+<h3>כבר יש לי קבצים שהורדתי לפני (גם אם שיניתי להם שם)</h3>
+<p>אין כפילויות. הסידור משווה לפי <b>תוכן</b>, לא לפי שם:</p>
+<ul>
+<li><b>קובץ שכבר נמצא בתיקיית הקורס</b>, בכל שם ובכל תת-תיקייה: לא נשמר שוב. העותק שירד נמחק מההורדות.</li>
+<li><b>קובץ שנמצא במקום אחר במחשב</b> (שולחן העבודה, מסמכים, iCloud או OneDrive), אם עניתם "כן" בשאלה 5 בהתקנה: <b>הקובץ שלכם עובר</b> לתיקיית הקורס, עם השם שנתתם לו, והעותק שירד נמחק. רואים את זה בהודעה. <b>ביטול סידור אחרון</b> מחזיר אותו למקום הקודם.</li>
+<li>הבדיקה רק במחשב שלכם. שום דבר לא נשלח לשום מקום. הסידור לא בודק תיקיות מערכת, ולא קבצים שנמצאים רק בענן ועוד לא ירדו למחשב.</li>
+<li>לשנות את התשובה: <b>הגדרות</b> ← שאלה 5.</li>
+<li>טיפ: אם כל הקבצים שלכם כבר בתיקייה אחת מסודרת, אפשר לבחור אותה כ<b>תיקיית הקורסים</b> (שאלה 1). תיקיית קורס שכבר קיימת, ששמה מופיע בשם הקורס במודל (למשל <b>פיזיקה 1</b>), תשמש לאותו קורס.</li>
+</ul>
+<h3>Chrome לא הציג "נוסף תוסף חדש"</h3>
+<ol start="1">
+<li>סוגרים את Chrome לגמרי (כל החלונות) ופותחים שוב.</li>
+<li>עדיין לא? מתקינים ישירות מחנות Chrome: <a href="https://chromewebstore.google.com/detail/jgmiocjhmgdcodakjlfnigmgapbdfhej">https://chromewebstore.google.com/detail/jgmiocjhmgdcodakjlfnigmgapbdfhej</a> ← <b>הוספה ל-Chrome</b>.</li>
+<li>מוודאים שהתוסף פועל: בשורת הכתובת כותבים <code dir="auto">chrome://extensions</code>. ליד <b>סדר מהמודל</b> המתג צריך להיות כחול.</li>
+</ol>
+<h3>זה מכביד על המחשב?</h3>
+<p>לא. הסידור ברקע רק בודק כל כמה שניות אם הגיעה הורדה מהמודל, ובעדיפות נמוכה. במדידה: <b>בערך 0% מעבד</b> ו<b>כ-26MB זיכרון</b>. התוסף פועל רק כמה דקות בלילה.</p>
+<h3>זה בטוח?</h3>
+<ul>
+<li><b>בלי סיסמאות:</b> התוסף משתמש בהתחברות שכבר קיימת ב-Chrome. הוא לא רואה, לא שומר ולא מקליד סיסמה.</li>
+<li><b>רק קריאה מהמודל:</b> הוא לא מגיש, לא שולח ולא משנה כלום במודל, ולא פונה לשום אתר אחר.</li>
+<li><b>נוגע רק בקבצים מהמודל:</b> הסידור מזיז רק קבצים שהתוסף הוריד. קבצים אחרים בהורדות לא נוגעים.</li>
+<li><b>לא דורס:</b> אף פעם לא דורס קובץ קיים. קובץ אחר עם אותו שם נשמר עם (2). מוחק רק בהורדות, ורק עותק זהה לגמרי לקובץ שכבר מסודר.</li>
+<li><b>הקוד גלוי:</b> כל הקוד נמצא בתיקייה <b>מערכת</b>. לכל קובץ יש "טביעת אצבע" ב-<code dir="auto">SHA256SUMS.txt</code> (הסבר בנספח).</li>
+<li><b>קבלו את הכלי רק ממי שאתם סומכים עליו</b>, ורק כקובץ ה-ZIP המקורי.</li>
+</ul>
+<h3>לא ראיתי הודעה על סידור</h3>
+<p>הקבצים מסתדרים גם בלי הודעה. Windows: הגדרות ← מערכת ← הודעות. Mac: ההודעה מגיעה בשם <b>Script Editor</b>: הגדרות המערכת ← הודעות ← Script Editor ← אפשר הודעות.</p>
+<h3>Chrome שואל איפה לשמור כל קובץ, או שומר במקום אחר</h3>
+<p>ב-Chrome: <b>הגדרות</b> ← <b>הורדות</b>.</p>
+<ul>
+<li>המיקום צריך להיות תיקיית <b>ההורדות</b>.</li>
+<li><b>"שאל איפה לשמור כל קובץ"</b> צריך להיות <b>כבוי</b>.</li>
+</ul>
+<h3>שיניתי שם לקובץ, או מחקתי קובץ</h3>
+<ul>
+<li><b>שיניתם שם?</b> לא משנה. הכלי מזהה קבצים לפי התוכן, ולא ישמור עותק נוסף.</li>
+<li><b>מחקתם ורוצים בחזרה?</b> בחלון של התוסף מסמנים <b>"הורד הכול מחדש"</b>.</li>
+<li><b>כתבתם הערות בתוך קובץ?</b> הקובץ שלכם נשמר. אם תורידו שוב, המקור יישמר לידו עם (2).</li>
+</ul>
+<h3>איך מסירים?</h3>
+<ol start="1">
+<li>לחיצה כפולה על <b>הסרת סידור אוטומטי</b>. הקבצים שלכם נשארים במקום.</li>
+<li>ב-Chrome: קליק ימני על סמל <b>סדר מהמודל</b> ← <b>הסרה מ-Chrome</b>.</li>
+<li>אחר כך אפשר למחוק את התיקייה <b>סדר מהמודל</b>.</li>
+</ol>
+<h3>משהו לא עובד</h3>
+<table>
+<tr><th>מה רואים</th><th>מה עושים</th></tr>
+<tr><td>"צריך להתחבר למודל"</td><td>לוחצים על ההודעה ומתחברים. ההורדה ממשיכה לבד.</td></tr>
+<tr><td>לא ירד כלום בלילה</td><td>המחשב או Chrome היו כבויים? ההורדה תרוץ כמה דקות אחרי שפותחים את Chrome. אפשר גם: קליק ימני על הסמל ← אפשרויות ← <b>להוריד עכשיו</b>.</td></tr>
+<tr><td>קבצים נשארו בהורדות</td><td>אולי קובץ היה פתוח בתוכנה אחרת. סוגרים אותו, והסידור ינסה שוב בעוד 10 דקות. או: לחיצה כפולה על <b>סדר הורדות</b>.</td></tr>
+<tr><td>קבצים נכנסו ל"אחר"</td><td>מעבירים ביד, או מוסיפים מילה (נספח).</td></tr>
+<tr><td>הקבצים לא מסתדרים בכלל</td><td>לחיצה כפולה שוב על <b>התקנת סידור אוטומטי</b>. זה בטוח, אפשר כמה פעמים.</td></tr>
+<tr><td>הודעה "❌ משהו השתבש"</td><td>מנסים שוב. חוזר? שולחים את ההודעה למי שנתן לכם את הכלי.</td></tr>
+</table>
+<details id="appendix"><summary>נספח טכני (למי שרוצה לדעת יותר)</summary>
+<h3>כל המילים של כל סוג</h3>
+<p>המילים נבדקות בשם הקובץ, בכותרת שלו ובשם הנושא במודל, לפי הסדר בטבלה. ההתאמה הראשונה קובעת.</p>
+<table>
+<tr><th>סוג</th><th>מילים</th></tr>
+<tr><td>מבחנים</td><td>מבחן, מבחנים, בחינה, בחינות, מועד, exam, moed, מרתון</td></tr>
+<tr><td>סילבוס</td><td>סילבוס, syllabus, סגל, נוסחאות, formula</td></tr>
+<tr><td>מטלות</td><td>מטלה, מטלות, assignment (וגם כל קובץ מפעילות "מטלה" במודל)</td></tr>
+<tr><td>שיעורי בית</td><td>תרגיל בית, שיעורי בית, hw, homework, פתרון תרגיל</td></tr>
+<tr><td>תרגולים</td><td>תרגול, תרגיל כיתה, תרגילי כיתה, cw, class, tutorial, תרגיל</td></tr>
+<tr><td>הרצאות</td><td>הרצאה, הרצאות, שיעור, lecture, מצגת, פרק</td></tr>
+<tr><td>אחר</td><td>כל מה שלא התאים</td></tr>
+</table>
+<p>מילים באנגלית נבדקות כמילה שלמה: exam תופס את exams ואת exam2023, אבל לא את examples.</p>
+<p>קובץ שלא התאים לאף מילה, אבל שמו מתחיל במספר ומקף (למשל "2 - Motion in 1D"), או שמו הוא שם ומספר (למשל "אינפי01"), או שהוא בנושא "לוח", נחשב <b>הרצאה</b>.</p>
+<h3>settings.json (בתיקייה מערכת)</h3>
+<p>נוצר בהתקנה. משנים דרך <b>הגדרות</b>, או בעריכה ידנית:</p>
+<ul>
+<li><code dir="auto">dest_root</code>: תיקיית הקורסים. נתיב יחסי נספר מהתיקייה <b>סדר מהמודל</b> (למשל <code dir="auto">../קורסים</code>).</li>
+<li><code dir="auto">layout</code>: <code dir="auto">{course}/{category}</code>, <code dir="auto">{course}</code>, <code dir="auto">{semester}/{course}/{category}</code>, <code dir="auto">{course}/{section}</code>.</li>
+<li><code dir="auto">category_names</code>: שמות תיקיות הסוג.</li>
+<li><code dir="auto">keywords</code>: המילים של כל סוג (קבצים ב"אחר"? מוסיפים מילה).</li>
+<li><code dir="auto">course_folders</code>: שם קורס במודל ← שם תיקייה, למשל <code dir="auto">"אלגברה לינארית 1": "אלגברה"</code>.</li>
+<li><code dir="auto">filename_style</code>: <code dir="auto">original</code> או <code dir="auto">clean</code>.</li>
+<li><code dir="auto">downloads</code>: תיקיית הורדות אחרת (ריק = תיקיית ההורדות של המחשב).</li>
+<li><code dir="auto">ignore_for_duplicates</code>: תיקיות שלא נבדקות ככפולים (ברירת מחדל: "משנה שעברה").</li>
+<li><code dir="auto">moodle_url</code>: המודל שנפתח ב-Chrome בהתקנה (ריק = אריאל).</li>
+</ul>
+<h3>התוסף</h3>
+<ul>
+<li><b>מאיפה:</b> חנות Chrome (<a href="https://chromewebstore.google.com/detail/jgmiocjhmgdcodakjlfnigmgapbdfhej">https://chromewebstore.google.com/detail/jgmiocjhmgdcodakjlfnigmgapbdfhej</a>). ההתקנה מוסיפה אותו בדרך הרשמית של Chrome לתוכנות: Windows: מפתח ב-<code dir="auto">HKCU\Software\Google\Chrome\Extensions</code> · Mac: macOS לא מאפשר את זה, ולכן ההתקנה פותחת את דף התוסף בחנות ואתם לוחצים "הוספה ל-Chrome". Chrome מבקש מכם להפעיל אותו. הוא אף פעם לא מופעל בלי אישור שלכם.</li>
+<li><b>התקנה ידנית</b> (בלי החנות): <code dir="auto">chrome://extensions</code> ← <b>מצב מפתח</b> (Developer mode) ← <b>טעינת פריט לא ארוז</b> (Load unpacked) ← בוחרים את התיקייה <b>מערכת/תוסף Chrome</b>.</li>
+<li><b>אתר מודל אחר:</b> בהגדרות התוסף (קליק ימני ← אפשרויות) בוחרים מהרשימה, או <b>אחר</b> וכתובת. ראו <a href="#other">אוניברסיטה או מכללה אחרת</a>.</li>
+</ul>
+<h3>ביטול מהשורת פקודה</h3>
+<p>Windows: <code dir="auto">מערכת\bin-win\MoodleSorter.exe --undo</code> · Mac: <code dir="auto">מערכת/bin-mac/MoodleSorter.app/Contents/MacOS/MoodleSorter --undo</code>.</p>
+<h3>יומנים ותוכנה</h3>
+<ul>
+<li><b>יומנים</b> (כ-30 יום): Windows: <code dir="auto">%LOCALAPPDATA%\SaderMehamoodle\logs</code> · Mac: <code dir="auto">~/Library/Logs/SaderMehamoodle</code>.</li>
+<li><b>התוכנה:</b> Windows: <code dir="auto">מערכת\bin-win\MoodleSorter.exe</code>. Mac: <code dir="auto">מערכת/bin-mac/MoodleSorter.app</code> (חתומה ומאושרת על ידי Apple).</li>
+</ul>
+<h3>אבטחה</h3>
+<ul>
+<li><b>התוסף:</b> פונה רק לאתר המודל, דרך ההתחברות שלכם. לא טוען קוד מהאינטרנט, לא קורא סיסמאות, ולא משנה כלום במודל. ההרשאות שלו: לתזמן ריצה, להוריד קבצים, להציג הודעות, לשמור הגדרות, ולאפשר הורדה של כמה קבצים מאתר המודל בלבד.</li>
+<li><b>הסידור:</b> בלי אינטרנט ובלי הרשאות מנהל. מזיז רק קבצים שרשומים ברשימה שהתוסף מוריד (<code dir="auto">moodle_manifest</code>). מנקה כל שם קובץ, חוסם יעד מחוץ לתיקיית הקורסים, לא עוקב אחרי קיצורי דרך, ומוחק רק בהורדות עותקים זהים לגמרי (SHA-256).</li>
+</ul>
+<h3>אימות הקבצים</h3>
+<p>בקובץ <code dir="auto">מערכת/SHA256SUMS.txt</code> יש טביעת אצבע לכל קובץ. לבדיקה: <code dir="auto">certutil -hashfile מערכת\sort_downloads.py SHA256</code> (במק: <code dir="auto">shasum -a 256 מערכת/sort_downloads.py</code>), ומשווים לשורה המתאימה.</p>
+</details>
+</div><div dir="ltr" lang="en" class="en"><h2>English</h2>
+<p><b>Sader Mehamoodle</b> downloads new Moodle course files every night and sorts them into course folders, by itself. It works with any Moodle site: pick your university in the extension's settings page (it opens after installing), or choose "אחר" (other) and type your Moodle's address. Outside Ariel, the courses Moodle shows as "In progress" are downloaded first; click the extension icon inside Moodle to choose others.</p>
+<ol start="0">
+<li>Extract the ZIP into Documents. Needs Windows 10/11 or an Apple-silicon Mac, Google Chrome, and a Moodle account.</li>
+<li><b>Install:</b> double-click <code dir="auto">Windows/התקנת סידור אוטומטי.bat</code> or <code dir="auto">Mac/התקנת סידור אוטומטי.command</code> and answer 6 short questions (Enter = default; question 6 is your university; question 5 lets it find Moodle files you already have elsewhere, matched by content, and move them into the course folder instead of keeping a second copy).</li>
+<li><b>In Chrome, once:</b> Windows: click <b>Enable extension</b> when Chrome says a new extension was added (if not: restart Chrome). Mac: on the Chrome Web Store tab that opens, click <b>Add to Chrome</b>, pick your university on the settings page that opens and click "שמירה" (save), and sign in to Moodle on the page that opens.</li>
+</ol>
+<p>That's all. A few minutes later the first download runs (this semester's courses); then every night at 1:00 only new files are downloaded, in a background tab, and sorted into <code dir="auto">&lt;Documents&gt;/מודל/&lt;course&gt;/&lt;category&gt;</code> with a notification. The computer must be on and Chrome open (missed runs catch up a few minutes after Chrome starts). Download now: right-click the extension icon → Options → "להוריד עכשיו". Choose courses/files: click the extension icon inside Moodle.</p>
+<ul>
+<li>Course folder: the name typed in the extension's panel → an existing folder whose name appears in the Moodle course name → the Moodle course name without parentheses and "-תרגיל".</li>
+<li>Category: first keyword match in the file name, its Moodle title and its section: exams → syllabus → assignments → homework → tutorials → lectures → other ("אחר").</li>
+<li>Files are recognised by content, so renamed files are not duplicated; nothing is ever overwritten; only exact duplicates in Downloads are deleted.</li>
+<li>The extension uses your existing Chrome sign-in (no passwords), only reads from Moodle, and talks to no other site. The sorter is offline, runs at low priority (about 0% CPU, 26 MB RAM). Full source in <code dir="auto">מערכת</code>, fingerprints in <code dir="auto">SHA256SUMS.txt</code>.</li>
+<li>Settings: <code dir="auto">הגדרות</code>. Undo the last sort: <code dir="auto">ביטול סידור אחרון</code> (asks first). Uninstall: <code dir="auto">הסרת סידור אוטומטי</code>, then remove the extension in Chrome.</li>
+</ul>
+</div><p class="ver">סדר מהמודל 6.4</p></body></html>

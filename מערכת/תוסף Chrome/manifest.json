@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "סדר מהמודל",
+  "short_name": "סדר מהמודל",
+  "version": "6.4.0",
+  "description": "מוריד לבד כל לילה את הקבצים החדשים מהמודל, בכל אוניברסיטה ומכללה (בלי סיסמה), והסידור במחשב מסדר אותם בתיקיות.",
+  "default_locale": "he",
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
+  "action": { "default_title": "סדר מהמודל: הורדה מהמודל", "default_icon": { "16": "icon16.png", "48": "icon48.png" } },
+  "background": { "service_worker": "background.js" },
+  "options_page": "options.html",
+  "permissions": ["alarms", "downloads", "notifications", "storage", "scripting", "activeTab", "contentSettings"],
+  "host_permissions": ["https://moodlearn.ariel.ac.il/*"],
+  "optional_host_permissions": ["https://*/*"]
+}

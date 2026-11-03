@@ -1,0 +1,34 @@
+# קבצים שנבנים או אישיים – לא נכנסים ל-git
+HANDOFF.md
+**/HANDOFF.md
+signing.local.sh
+*.local.*
+לשיתוף/
+**/bin-win/
+**/bin-mac/
+dist/
+build/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.exe
+*.dll
+*.app
+*.zip
+*.dmg
+*.pkg
+*.log
+sort_*.json
+מערכת/settings.json
+SHA256SUMS.txt
+תוצאת בנייה.txt
+# אישורים וחתימות
+*.p12
+*.cer
+*.mobileprovision
+*.keychain*
+*.pem
+*.key
+.env
+.DS_Store

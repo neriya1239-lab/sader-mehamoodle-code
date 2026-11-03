@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><title>סדר מהמודל – הגדרות</title>
+<style>
+body{font:15px Arial,sans-serif;max-width:560px;margin:24px auto;padding:0 16px;color:#111;line-height:1.6}
+h1{color:#0b4f8a;font-size:22px} .box{background:#f2f6fa;border-radius:8px;padding:10px 14px;margin:12px 0}
+label{display:block;margin:8px 0} input[type=text],select{width:100%} button{padding:7px 16px;border-radius:6px;border:0;background:#0b4f8a;color:#fff;cursor:pointer;margin-left:8px}
+.muted{color:#666;font-size:13px}
+</style></head><body>
+<h1>סדר מהמודל</h1>
+<div class="box">
+  <label><input type="checkbox" id="enabled"> להוריד לבד כל לילה את הקבצים החדשים</label>
+  <label>בשעה: <input type="time" id="time"></label>
+  <div class="muted">המחשב צריך להיות דלוק ו-Chrome פתוח (או רץ ברקע). אם הם היו כבויים, ההורדה תרוץ כמה דקות אחרי ש-Chrome נפתח.</div>
+</div>
+<div class="box" id="welcome" style="display:none;background:#fff6dc">
+  <b>ברוכים הבאים!</b> בחרו את האוניברסיטה או המכללה שלכם ולחצו "שמירה". אחר כך ייפתח המודל, ומתחברים אליו פעם אחת.
+</div>
+<div class="box">
+  <label>האוניברסיטה או המכללה: <select id="uni"></select></label>
+  <div id="custom">
+    <label>כתובת המודל: <input type="text" id="site" placeholder="https://moodle.example.ac.il"></label>
+    <label>הדף שנפתח בהורדה הלילית (ברוב האתרים: <code>/my/</code>): <input type="text" id="loginPath"></label>
+  </div>
+  <div class="muted">ההורדה משתמשת בהתחברות של Chrome שלכם. התוסף לא שומר ולא מקליד סיסמה. אם המודל מבקש להתחבר, תופיע הודעה ונפתח דף ההתחברות.</div>
+</div>
+<p><button id="save">שמירה</button><button id="run">להוריד עכשיו</button> <span id="msg"></span></p>
+<div class="box"><b>הריצה האחרונה:</b> <span id="last">עוד לא רצה.</span></div>
+<p class="muted">איזה קורסים: אלה שסימנתם בפעם האחרונה בחלון ההורדה (לחיצה על סמל התוסף בתוך המודל), או קורסי הסמסטר הנוכחי. מה לא להוריד: ⚙ באותו חלון.</p>
+<script src="universities.js"></script>
+<script src="options.js"></script>
+</body></html>

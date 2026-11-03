@@ -1,0 +1,59 @@
+טקסטים להעתקה לחנות Chrome (Chrome Web Store Developer Dashboard)
+=====================================================================
+
+שם: סדר מהמודל
+קטגוריה: Education (חינוך) / Tools
+שפה: עברית
+נראות (Visibility): Unlisted (לא רשום) - רק מי שיש לו קישור
+
+--- תיאור קצר (Summary) ---
+מוריד לבד כל לילה את הקבצים החדשים מהמודל, בכל אוניברסיטה ומכללה, דרך ההתחברות שלכם ובלי סיסמה.
+
+--- תיאור מלא (Description) ---
+"סדר מהמודל" חוסך את ההורדה הידנית של חומרי הקורסים מהמודל.
+עובד בכל אוניברסיטה ומכללה שיש בה Moodle: בוחרים את המוסד מרשימה (אריאל, בן-גוריון, בר-אילן, הטכניון, האוניברסיטה הפתוחה ועוד), או מקלידים את כתובת המודל.
+
+מה הוא עושה:
+• כל לילה בשעה שבחרתם (ברירת מחדל 1:00) הוא פותח את המודל בטאב ברקע, ומוריד רק את הקבצים החדשים מהקורסים שבחרתם: קבצים, תיקיות, קבצים מצורפים למטלות ודפים.
+• קבצים שכבר הורדתם לא יורדים שוב.
+• בפעם הראשונה יורדים הקורסים של הסמסטר הנוכחי (הקורסים שהמודל מציג כ"בתהליך"). קורסים חדשים מצטרפים לבד.
+• לחיצה על סמל התוסף בתוך המודל פותחת חלון שבו בוחרים קורסים וקבצים ידנית.
+• יחד עם התוכנה "סדר מהמודל" במחשב, הקבצים מסתדרים לבד בתיקיות לפי קורס וסוג (הרצאות, תרגולים, מבחנים...).
+
+פרטיות ואבטחה:
+• התוסף לא רואה, לא שומר ולא מקליד סיסמה. הוא משתמש בהתחברות שכבר קיימת ב-Chrome שלכם.
+• אם המודל מבקש להתחבר, תופיע הודעה, ושום דבר לא יורד.
+• התוסף רק קורא ומוריד. הוא לא שולח, לא מגיש ולא משנה כלום במודל.
+• שום מידע לא נשלח לשרת אחר: הכל קורה בין Chrome שלכם לבין אתר המודל.
+
+--- מטרה יחידה (Single purpose) ---
+Download the user's own new course files from their Moodle site on a schedule, using the user's existing browser session.
+
+--- הצדקה להרשאות (Permission justification) ---
+alarms: to run the download once a night at the time the user chose.
+downloads: to save the course files and to wait until downloads finish before closing the background tab.
+notifications: to tell the user how many files were downloaded, or that Moodle asks them to sign in.
+storage: to keep the user's settings (time, Moodle address) and the result of the last run.
+scripting: to run the download code inside the user's Moodle tab (the same code as the toolbar button).
+activeTab: so the toolbar button can open the file-picker window on the Moodle page the user is on.
+contentSettings: to allow multiple automatic downloads from the user's Moodle site only, so the nightly run is not blocked by "allow multiple downloads?".
+Host permission moodlearn.ariel.ac.il: the Moodle site the files are downloaded from.
+Optional host permission https://*/*: requested only when the user picks another university (or types another Moodle address) on the settings page, and only for that one site (chrome.permissions.request with that origin).
+Remote code: No. All code is inside the extension package.
+
+--- נתונים (Data usage) ---
+לסמן: לא אוסף נתוני משתמש (no user data collected or transmitted).
+לאשר את שלושת ההצהרות (not sold, not used for unrelated purposes, not used for credit).
+
+--- הוראות לבודק (Test instructions) - להדביק בשדה "Additional instructions", ולהשאיר ריקים את שם המשתמש והסיסמה ---
+This extension works with Moodle sites. By default it targets Ariel University's Moodle (moodlearn.ariel.ac.il), which requires a university student account, so we cannot provide test credentials.
+How to test without an Ariel account: the options page opens after installing. Choose "אחר" (other) in the university list and enter any Moodle site where you have an account (for example the demo site https://school.moodledemo.net, page /my/), click "שמירה" (Save) and grant the optional host permission for that site only, sign in to that site in the browser, then click "להוריד עכשיו" (Download now). The extension opens the site in a background tab, lists the files of your courses (Moodle's standard /mod/resource/index.php and similar pages), downloads new ones, and shows a notification. Clicking the toolbar icon on a Moodle page opens the same file-picker window manually.
+If you are not signed in, it only shows a "please sign in" notification and downloads nothing. The extension never handles passwords, and sends nothing to any server other than the Moodle site itself.
+
+--- מדיניות פרטיות (Privacy policy) - צריך לפרסם בכתובת ציבורית ולהדביק את הקישור ---
+מדיניות פרטיות - התוסף "סדר מהמודל"
+התוסף לא אוסף, לא שומר ולא שולח מידע אישי לשום שרת.
+הוא מתחבר רק לאתר המודל שהמשתמש הגדיר, דרך ההתחברות שכבר קיימת בדפדפן, ומוריד משם קבצים למחשב של המשתמש.
+ההגדרות (שעה, כתובת אתר) ותוצאת הריצה האחרונה נשמרות רק בדפדפן של המשתמש (chrome.storage.local).
+התוסף לא רואה ולא שומר סיסמאות.
+יצירת קשר: perch.fluxes.6n@icloud.com
