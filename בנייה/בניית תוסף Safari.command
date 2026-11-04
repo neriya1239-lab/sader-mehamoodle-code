@@ -32,12 +32,14 @@ PROJ="$(find "$OUT/$NAME" -maxdepth 1 -name '*.xcodeproj' | head -1)"
 
 # 3. signing team + the name people see under the icon
 PBX="$PROJ/project.pbxproj"; [ -f "$PBX" ] || PBX="$PROJ/project.xcproj"   # Xcode 27 calls it project.xcproj
-[ -f "$PBX" ] || fail "לא נמצא קובץ הפרויקט בתוך $PROJ."
-sed -i '' '/DEVELOPMENT_TEAM = /d' "$PBX"
-sed -i '' 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 2;/g' "$PBX"     # iPad only (no iPhone screenshots needed)
-sed -i '' "s/buildSettings = {/buildSettings = {\\
+if LC_ALL=C grep -q "buildSettings = {" "$PBX" 2>/dev/null; then
+  LC_ALL=C sed -i '' '/DEVELOPMENT_TEAM = /d' "$PBX"
+  LC_ALL=C sed -i '' 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 2;/g' "$PBX"     # iPad only (no iPhone screenshots needed)
+  LC_ALL=C sed -i '' "s/buildSettings = {/buildSettings = {\\
 				DEVELOPMENT_TEAM = $TEAM;/g" "$PBX"
-grep -q "DEVELOPMENT_TEAM = $TEAM" "$PBX" || say "⚠ לא הצלחתי לרשום את חשבון המפתח בפרויקט. ההעלאה ל-App Store לא מושפעת (היא קובעת אותו בעצמה); בהרצה מ-Xcode בוחרים אותו ידנית."
+else
+  say "הערה: לא רשמתי את חשבון המפתח בקובץ הפרויקט. ההעלאה ל-App Store לא מושפעת (היא קובעת אותו בעצמה); בהרצה מ-Xcode בוחרים אותו ידנית."
+fi
 find "$OUT/$NAME" -name Info.plist -not -path '*/build/*' | while read -r P; do
   /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName סדר מהמודל" "$P" 2>/dev/null \
     || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string סדר מהמודל" "$P" 2>/dev/null
