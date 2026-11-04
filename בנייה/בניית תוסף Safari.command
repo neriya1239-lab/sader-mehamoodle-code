@@ -31,14 +31,16 @@ PROJ="$(find "$OUT/$NAME" -maxdepth 1 -name '*.xcodeproj' | head -1)"
 [ -n "$PROJ" ] || fail "לא נוצר פרויקט Xcode."
 
 # 3. signing team + the name people see under the icon
-PBX="$PROJ/project.pbxproj"; [ -f "$PBX" ] || PBX="$PROJ/project.xcproj"   # Xcode 27 calls it project.xcproj
-if LC_ALL=C grep -q "buildSettings = {" "$PBX" 2>/dev/null; then
-  LC_ALL=C sed -i '' '/DEVELOPMENT_TEAM = /d' "$PBX"
-  LC_ALL=C sed -i '' 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 2;/g' "$PBX"     # iPad only (no iPhone screenshots needed)
-  LC_ALL=C sed -i '' "s/buildSettings = {/buildSettings = {\\
+PBX="$PROJ/project.pbxproj"
+if [ -f "$PBX" ]; then
+  sed -i '' '/DEVELOPMENT_TEAM = /d' "$PBX"
+  sed -i '' 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 2;/g' "$PBX"     # iPad only (no iPhone screenshots needed)
+  sed -i '' "s/buildSettings = {/buildSettings = {\\
 				DEVELOPMENT_TEAM = $TEAM;/g" "$PBX"
+elif [ -f "$PROJ/project.xcproj" ]; then                            # Xcode 27: a JSON-style file. Only the device family; the team is set in Xcode or by the upload script
+  sed -E -i '' 's/("TARGETED_DEVICE_FAMILY"[[:space:]]*:[[:space:]]*)"1,2"/\1"2"/g' "$PROJ/project.xcproj"
 else
-  say "הערה: לא רשמתי את חשבון המפתח בקובץ הפרויקט. ההעלאה ל-App Store לא מושפעת (היא קובעת אותו בעצמה); בהרצה מ-Xcode בוחרים אותו ידנית."
+  say "הערה: לא נמצא קובץ פרויקט לעריכה. ההעלאה ל-App Store לא מושפעת, כי היא קובעת את ההגדרות בעצמה."
 fi
 find "$OUT/$NAME" -name Info.plist -not -path '*/build/*' | while read -r P; do
   /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName סדר מהמודל" "$P" 2>/dev/null \
@@ -71,7 +73,7 @@ fi
 SCHEMES="$(xcodebuild -list -project "$PROJ" 2>/dev/null | sed -n '/Schemes:/,$p' | tail -n +2 | sed 's/^ *//')"
 IOS="$(echo "$SCHEMES" | grep -i 'ios' | head -1)"; [ -n "$IOS" ] || IOS="$NAME (iOS)"
 say "בונה לבדיקה: $IOS"
-xcodebuild -project "$PROJ" -scheme "$IOS" -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build >> "$LOG" 2>&1 \
+xcodebuild -project "$PROJ" -scheme "$IOS" -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO TARGETED_DEVICE_FAMILY=2 build >> "$LOG" 2>&1 \
   || fail "הבנייה ל-iPad נכשלה (הפרטים ביומן)."
 
 say ""
@@ -80,6 +82,7 @@ say "עכשיו Xcode נפתח. כדי לנסות על ה-iPad:"
 say "  1. מחברים את ה-iPad בכבל למק (ובאייפד: 'לסמוך על המחשב הזה').";
 say "  2. למעלה ב-Xcode: בוחרים את '$IOS', ולידו את ה-iPad שלך."
 say "  3. לוחצים ▶ (Run). בפעם הראשונה: באייפד הגדרות ← כללי ← VPN וניהול מכשירים ← לאשר את המפתח."
+say "     אם Xcode מבקש צוות (Team): בוחרים אותו פעם אחת ב-Signing & Capabilities."
 say "  4. באייפד: הגדרות ← Apps ← Safari ← הרחבות ← סדר מהמודל ← להפעיל, ולאפשר ל-moodlearn.ariel.ac.il."
 open "$PROJ"
 read -t 600 -n 1 -s -r -p "אפשר לסגור את החלון."; echo ""
