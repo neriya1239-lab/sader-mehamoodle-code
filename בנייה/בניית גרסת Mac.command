@@ -3,6 +3,9 @@
 # Builds מערכת/bin-mac/MoodleSorter.app (shown as "סדר מהמודל", universal2 = Apple silicon + Intel, no Python needed) with PyInstaller inside a temporary venv outside iCloud, signs and notarizes it
 # when a "Developer ID Application" certificate and the keychain profile "sader-notary" exist (otherwise builds unsigned),
 # then rebuilds "לשיתוף/סדר מהמודל v<N> - Mac.zip". Never asks for, prints or stores a password.
+# Since v6.4.1 it also builds the 5 launchers as small signed + notarized apps ("התקנת סידור אוטומטי.app" ...; the code is in
+# בנייה/mac-launcher), which replace the .command files that Gatekeeper blocked. They go to Mac/ and to the top of the Mac ZIP.
+# Without signing + notarization the launchers stay .command files, as before.
 HERE="$(cd "$(dirname "$0")" && pwd)"
 TOP="$(dirname "$HERE")"
 KIT="$TOP/מערכת"
@@ -72,20 +75,46 @@ if [ "$TARGET" = "universal2" ]; then
   fi
 fi
 
+# ---- the 5 launchers (small apps that open the program in Terminal; see בנייה/mac-launcher/launcher.c) ----
+LAUNCH="$WORK/launchers"; LAUNCHERS_OK=""
+if bash "$HERE/mac-launcher/build_launchers.sh" "$LAUNCH" "$VERSION"; then
+  LAUNCHERS_OK="built"
+else
+  NOTES+="⚠ בניית אפליקציות ההפעלה נכשלה (ראו ביומן), ולכן נשארים קבצי .command.\n"
+fi
+
 # ---- signing and notarization (only if the certificate exists) ----
 IDENT="$(security find-identity -v -p codesigning 2>/dev/null | grep "Developer ID Application" | head -1 | sed -E 's/.*"(.*)".*/\1/')"
 if [ -n "$IDENT" ]; then
   echo "חותם עם: $IDENT"
   find "$APP/Contents" -type f \( -name "*.dylib" -o -name "*.so" -o -perm -u+x \) ! -path "$PROG" -print0 |
     while IFS= read -r -d '' f; do codesign --force --options runtime --timestamp --sign "$IDENT" "$f" || echo "SIGNFAIL $f"; done
+  if [ -n "$LAUNCHERS_OK" ]; then
+    for L in "$LAUNCH"/*.app; do
+      codesign --force --options runtime --timestamp --sign "$IDENT" "$L" && codesign --verify --strict "$L" \
+        || { LAUNCHERS_OK=""; NOTES+="⚠ החתימה של $(basename "$L") נכשלה, ולכן נשארים קבצי .command.\n"; break; }
+    done
+    [ -n "$LAUNCHERS_OK" ] && LAUNCHERS_OK="signed"
+  fi
   if codesign --force --deep --options runtime --timestamp --sign "$IDENT" "$APP" && codesign --verify --deep --strict "$APP" \
      && "$PROG" --version | grep -q MoodleSorter; then
     SIGNED="כן ($IDENT)"
     if xcrun notarytool history --keychain-profile "sader-notary" >/dev/null 2>&1; then
-      ditto -c -k --keepParent "$APP" "$WORK/notarize.zip"
+      # one submission for the program and the launchers together (a folder of copies; the ticket covers each of them)
+      mkdir -p "$WORK/notarize/סדר מהמודל" && ditto "$APP" "$WORK/notarize/סדר מהמודל/MoodleSorter.app"
+      [ "$LAUNCHERS_OK" = "signed" ] && for L in "$LAUNCH"/*.app; do ditto "$L" "$WORK/notarize/סדר מהמודל/$(basename "$L")"; done
+      ditto -c -k --keepParent "$WORK/notarize/סדר מהמודל" "$WORK/notarize.zip"
       if xcrun notarytool submit "$WORK/notarize.zip" --keychain-profile "sader-notary" --wait | tee "$WORK/notary.txt" | grep -q "status: Accepted"; then
         NOTARIZED="כן"
         xcrun stapler staple "$APP" && NOTES+="האישור של Apple הוצמד לאפליקציה (staple).\n"
+        if [ "$LAUNCHERS_OK" = "signed" ]; then
+          LAUNCHERS_OK="notarized"
+          for L in "$LAUNCH"/*.app; do
+            xcrun stapler staple "$L" >/dev/null && spctl -a -t exec "$L" 2>/dev/null \
+              || { LAUNCHERS_OK=""; NOTES+="⚠ האישור של Apple לא הוצמד ל-$(basename "$L"), ולכן נשארים קבצי .command.\n"; break; }
+          done
+          [ -n "$LAUNCHERS_OK" ] && NOTES+="5 אפליקציות ההפעלה חתומות, מאושרות (notarized) ועם staple.\n"
+        fi
       else
         NOTES+="ה-notarization לא אושר – הפרטים ביומן.\n"
       fi
@@ -104,6 +133,20 @@ fi
 mkdir -p "$WORK/bin-mac" && ditto "$APP" "$WORK/bin-mac/MoodleSorter.app" || finish "❌ נבנה, אבל ההכנה להעתקה נכשלה."
 rm -rf "$KIT/bin-mac.new" && ditto "$WORK/bin-mac" "$KIT/bin-mac.new" && rm -rf "$KIT/bin-mac" && mv "$KIT/bin-mac.new" "$KIT/bin-mac" \
   || finish "❌ נבנה, אבל ההעתקה לתיקייה מערכת נכשלה."
-SADER_MAC_BIN="$WORK/bin-mac" python3 "$HERE/_build_release.py" || finish "⚠ התוכנה נבנתה ונמצאת ב-מערכת/bin-mac, אבל בניית ה-ZIP נכשלה."
+LAUNCH_ENV=""; DONE_LAUNCHERS="קבצי .command"
+if [ "$LAUNCHERS_OK" = "notarized" ]; then        # the launcher apps go to Mac/ (the old .command files are removed by _build_release.py)
+  for L in "$LAUNCH"/*.app; do
+    N="$(basename "$L")"
+    rm -rf "$TOP/Mac/$N.new" && ditto "$L" "$TOP/Mac/$N.new" && rm -rf "$TOP/Mac/$N" && mv "$TOP/Mac/$N.new" "$TOP/Mac/$N" \
+      || finish "❌ נבנה, אבל העתקת $N לתיקייה Mac נכשלה."
+  done
+  LAUNCH_ENV="$LAUNCH"; DONE_LAUNCHERS="5 אפליקציות הפעלה חתומות ומאושרות"
+fi
+SADER_MAC_BIN="$WORK/bin-mac" SADER_MAC_LAUNCHERS="$LAUNCH_ENV" python3 "$HERE/_build_release.py" \
+  || finish "⚠ התוכנה נבנתה ונמצאת ב-מערכת/bin-mac, אבל בניית ה-ZIP נכשלה."
+if [ -f "$HERE/release/sader-mac-$VERSION.zip" ]; then   # v6.5: the self-update. Publishing is manual, only after checking.
+  NOTES+="קבצי העדכון האוטומטי מוכנים בתיקייה בנייה/release (לא פורסמו). לפרסום, אחרי בדיקה ובאישור:\n"
+  NOTES+="  gh release create v$VERSION \"$HERE/release/sader-mac-$VERSION.zip\" \"$HERE/release/update.json\" --repo neriya1239-lab/sader-mehamoodle-code --title \"סדר מהמודל $VERSION\" --notes \"ראו CHANGELOG\"\n"
+fi
 SIZE="$(du -sh "$APP" | cut -f1)"
-finish "✅ נבנתה גרסת Mac $VERSION ($ARCHS, $SIZE) בשם 'סדר מהמודל' ונשמרה ב-מערכת/bin-mac, וה-ZIP למק בתיקייה לשיתוף עודכן."
+finish "✅ נבנתה גרסת Mac $VERSION ($ARCHS, $SIZE) בשם 'סדר מהמודל' ונשמרה ב-מערכת/bin-mac, עם $DONE_LAUNCHERS, וה-ZIP למק בתיקייה לשיתוף עודכן."

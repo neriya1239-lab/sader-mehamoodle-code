@@ -56,7 +56,7 @@ details{border:1px solid #dde;border-radius:8px;padding:6px 12px;margin:14px 0} 
 </ol>
 <ul>
 <li>Windows: "Windows protected your PC" ← <b>More info</b> ← <b>Run anyway</b>. חלון "אזהרת אבטחה" ← <b>הפעל</b>.</li>
-<li>Mac: "Apple could not verify" ← <b>סיום</b>, ואז הגדרות המערכת ← פרטיות ואבטחה ← <b>"פתח בכל זאת"</b>.</li>
+<li>Mac: "הורד מהאינטרנט. האם לפתוח?" ← <b>פתיחה</b> (פעם אחת לכל כפתור).</li>
 </ul>
 <ol start="3">
 <li>נפתח חלון עם <b>6 שאלות</b>. בכל שאלה מקלידים מספר ולוחצים <b>Enter</b>. רק <b>Enter</b> = ברירת המחדל (מומלץ):</li>
@@ -116,6 +116,7 @@ details{border:1px solid #dde;border-radius:8px;padding:6px 12px;margin:14px 0} 
 <tr><td><b>להפסיק</b> את הסידור ברקע</td><td>לחיצה כפולה על <b>הסרת סידור אוטומטי</b>. ההגדרות נשמרות. מחזירים: לחיצה כפולה על <b>התקנת סידור אוטומטי</b>.</td></tr>
 <tr><td><b>להסיר</b> הכל</td><td>ראו <a href="#faq">איך מסירים</a>.</td></tr>
 </table>
+<p><b>עדכונים:</b> הכלי מתעדכן לבד. פעם ביום הסידור ברקע בודק אם יש גרסה חדשה, ואם יש הוא מוריד ומתקין אותה ומציג הודעה <b>"סדר מהמודל עודכן לגרסה ..."</b>. לא צריך לקבל ZIP חדש. ההגדרות והקבצים שלכם לא משתנים. לא רוצים עדכונים? ב-<code dir="auto">settings.json</code> (בתיקייה <b>מערכת</b>): <code dir="auto">"auto_update": false</code>.</p>
 <p><b>אחרי הפעלה מחדש של המחשב:</b> לא צריך לעשות כלום.</p>
 <ul>
 <li>הסידור עולה לבד עם המחשב, בשקט וברקע.</li>
@@ -235,6 +236,7 @@ details{border:1px solid #dde;border-radius:8px;padding:6px 12px;margin:14px 0} 
 <tr><td>קבצים נשארו בהורדות</td><td>אולי קובץ היה פתוח בתוכנה אחרת. סוגרים אותו, והסידור ינסה שוב בעוד 10 דקות. או: לחיצה כפולה על <b>סדר הורדות</b>.</td></tr>
 <tr><td>קבצים נכנסו ל"אחר"</td><td>מעבירים ביד, או מוסיפים מילה (נספח).</td></tr>
 <tr><td>הקבצים לא מסתדרים בכלל</td><td>לחיצה כפולה שוב על <b>התקנת סידור אוטומטי</b>. זה בטוח, אפשר כמה פעמים.</td></tr>
+<tr><td>הודעה "אין הרשאה לתיקייה ..."</td><td>Mac: הגדרות המערכת ← פרטיות ואבטחה ← קבצים ותיקיות ← <b>סדר מהמודל</b> ← מדליקים את התיקייה. Windows: מאשרים את <b>סדר מהמודל</b> בתוכנת האבטחה.</td></tr>
 <tr><td>הודעה "❌ משהו השתבש"</td><td>מנסים שוב. חוזר? שולחים את ההודעה למי שנתן לכם את הכלי.</td></tr>
 </table>
 <details id="appendix"><summary>נספח טכני (למי שרוצה לדעת יותר)</summary>
@@ -264,6 +266,7 @@ details{border:1px solid #dde;border-radius:8px;padding:6px 12px;margin:14px 0} 
 <li><code dir="auto">downloads</code>: תיקיית הורדות אחרת (ריק = תיקיית ההורדות של המחשב).</li>
 <li><code dir="auto">ignore_for_duplicates</code>: תיקיות שלא נבדקות ככפולים (ברירת מחדל: "משנה שעברה").</li>
 <li><code dir="auto">moodle_url</code>: המודל שנפתח ב-Chrome בהתקנה (ריק = אריאל).</li>
+<li><code dir="auto">auto_update</code>: <code dir="auto">true</code> (ברירת מחדל) = מתעדכן לבד פעם ביום; <code dir="auto">false</code> = לא. (תיקיית הכלי של המפתח, זו עם התיקייה <b>בנייה</b>, לא מתעדכנת כך.)</li>
 </ul>
 <h3>התוסף</h3>
 <ul>
@@ -290,7 +293,7 @@ details{border:1px solid #dde;border-radius:8px;padding:6px 12px;margin:14px 0} 
 <p><b>Sader Mehamoodle</b> downloads new Moodle course files every night and sorts them into course folders, by itself. It works with any Moodle site: pick your university in the extension's settings page (it opens after installing), or choose "אחר" (other) and type your Moodle's address. Outside Ariel, the courses Moodle shows as "In progress" are downloaded first; click the extension icon inside Moodle to choose others.</p>
 <ol start="0">
 <li>Extract the ZIP into Documents. Needs Windows 10/11 or an Apple-silicon Mac, Google Chrome, and a Moodle account.</li>
-<li><b>Install:</b> double-click <code dir="auto">Windows/התקנת סידור אוטומטי.bat</code> or <code dir="auto">Mac/התקנת סידור אוטומטי.command</code> and answer 6 short questions (Enter = default; question 6 is your university; question 5 lets it find Moodle files you already have elsewhere, matched by content, and move them into the course folder instead of keeping a second copy).</li>
+<li><b>Install:</b> double-click <code dir="auto">Windows/התקנת סידור אוטומטי.bat</code> or <code dir="auto">Mac/התקנת סידור אוטומטי</code> and answer 6 short questions (Enter = default; question 6 is your university; question 5 lets it find Moodle files you already have elsewhere, matched by content, and move them into the course folder instead of keeping a second copy).</li>
 <li><b>In Chrome, once:</b> Windows: click <b>Enable extension</b> when Chrome says a new extension was added (if not: restart Chrome). Mac: on the Chrome Web Store tab that opens, click <b>Add to Chrome</b>, pick your university on the settings page that opens and click "שמירה" (save), and sign in to Moodle on the page that opens.</li>
 </ol>
 <p>That's all. A few minutes later the first download runs (this semester's courses); then every night at 1:00 only new files are downloaded, in a background tab, and sorted into <code dir="auto">&lt;Documents&gt;/מודל/&lt;course&gt;/&lt;category&gt;</code> with a notification. The computer must be on and Chrome open (missed runs catch up a few minutes after Chrome starts). Download now: right-click the extension icon → Options → "להוריד עכשיו". Choose courses/files: click the extension icon inside Moodle.</p>
@@ -301,4 +304,4 @@ details{border:1px solid #dde;border-radius:8px;padding:6px 12px;margin:14px 0} 
 <li>The extension uses your existing Chrome sign-in (no passwords), only reads from Moodle, and talks to no other site. The sorter is offline, runs at low priority (about 0% CPU, 26 MB RAM). Full source in <code dir="auto">מערכת</code>, fingerprints in <code dir="auto">SHA256SUMS.txt</code>.</li>
 <li>Settings: <code dir="auto">הגדרות</code>. Undo the last sort: <code dir="auto">ביטול סידור אחרון</code> (asks first). Uninstall: <code dir="auto">הסרת סידור אוטומטי</code>, then remove the extension in Chrome.</li>
 </ul>
-</div><p class="ver">סדר מהמודל 6.4</p></body></html>
+</div><p class="ver">סדר מהמודל 6.5</p></body></html>

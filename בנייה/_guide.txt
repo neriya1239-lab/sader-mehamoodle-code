@@ -45,14 +45,15 @@
 
 ## שלב 1: ההתקנה
 
-1. {win}לחיצה כפולה על **התקנת סידור אוטומטי.bat**.{/win}{mac}לחיצה כפולה על **התקנת סידור אוטומטי.command**.{/mac}{both}לחיצה כפולה על **התקנת סידור אוטומטי** בתיקייה של המחשב שלכם (**Windows** או **Mac**).{/both}
+1. {win}לחיצה כפולה על **התקנת סידור אוטומטי.bat**.{/win}{mac}לחיצה כפולה על **התקנת סידור אוטומטי**.{/mac}{both}לחיצה כפולה על **התקנת סידור אוטומטי** בתיקייה של המחשב שלכם (**Windows** או **Mac**).{/both}
 2. **אם מופיעה אזהרה** (רק בפעם הראשונה):
 {win}   - חלון כחול "Windows protected your PC": לוחצים **More info** ← **Run anyway**.
    - חלון "אזהרת אבטחה" (Open File – Security Warning): לוחצים **הפעל** (Run).
-   - למה זה קורה? הכלי לא חתום אצל Microsoft (חתימה עולה כסף). זה לא אומר שמשהו לא בסדר.{/win}{mac}   - "Apple could not verify" או "לא ניתן לפתוח": לוחצים **סיום** (Done). אז **הגדרות המערכת** ← **פרטיות ואבטחה** ← גוללים למטה ← **"פתח בכל זאת"** (Open Anyway), ומאשרים בסיסמת המק.
-   - למה זה קורה? קבצי ה-.command הם קבצי הפעלה קטנים שהגיעו מהאינטרנט. התוכנה עצמה חתומה ומאושרת על ידי Apple.
-   - **זה קורה בפעם הראשונה לכל קובץ .command** (גם ל**הגדרות** ול**הסרת סידור אוטומטי**). עושים את אותו הדבר.{/mac}{both}   - Windows: "Windows protected your PC" ← **More info** ← **Run anyway**. חלון "אזהרת אבטחה" ← **הפעל**.
-   - Mac: "Apple could not verify" ← **סיום**, ואז הגדרות המערכת ← פרטיות ואבטחה ← **"פתח בכל זאת"**.{/both}
+   - למה זה קורה? הכלי לא חתום אצל Microsoft (חתימה עולה כסף). זה לא אומר שמשהו לא בסדר.{/win}{mac}   - "**התקנת סידור אוטומטי** הוא יישום שהורד מהאינטרנט. האם לפתוח אותו?": לוחצים **פתיחה** (Open).
+   - זו שאלה רגילה של macOS על כל דבר שהגיע מהאינטרנט. הכפתורים והתוכנה חתומים ומאושרים על ידי Apple (notarized), ולכן אין צורך בהגדרות המערכת.
+   - השאלה מופיעה פעם אחת לכל כפתור (גם ל**הגדרות** ול**הסרת סידור אוטומטי**).
+   - הכפתור פותח חלון **Terminal** (חלון טקסט). בו עונים על השאלות.{/mac}{both}   - Windows: "Windows protected your PC" ← **More info** ← **Run anyway**. חלון "אזהרת אבטחה" ← **הפעל**.
+   - Mac: "הורד מהאינטרנט. האם לפתוח?" ← **פתיחה** (פעם אחת לכל כפתור).{/both}
 3. נפתח חלון עם **6 שאלות**. בכל שאלה מקלידים מספר ולוחצים **Enter**. רק **Enter** = ברירת המחדל (מומלץ):
    - **לאן לשים את הקורסים?** 1 = תיקייה **מודל** בתוך מסמכים. 2 = תיקייה אחרת (אפשר לגרור תיקייה לחלון).
    - **איך לסדר?** 1 = קורס ← סוג. הסבר בהמשך, ב"איך הקבצים מסודרים".
@@ -115,6 +116,8 @@
 | **לכבות** את התוסף לגמרי | בשורת הכתובת: `chrome://extensions` ← מכבים את המתג של **סדר מהמודל**. מדליקים באותה דרך. |
 | **להפסיק** את הסידור ברקע | לחיצה כפולה על **הסרת סידור אוטומטי**. ההגדרות נשמרות. מחזירים: לחיצה כפולה על **התקנת סידור אוטומטי**. |
 | **להסיר** הכל | ראו [איך מסירים](#faq). |
+
+**עדכונים:** הכלי מתעדכן לבד. פעם ביום הסידור ברקע בודק אם יש גרסה חדשה, ואם יש הוא מוריד ומתקין אותה ומציג הודעה **"סדר מהמודל עודכן לגרסה ..."**. לא צריך לקבל ZIP חדש. ההגדרות והקבצים שלכם לא משתנים.{mac} כל עדכון נבדק לפני ההתקנה: חתום ומאושר על ידי Apple.{/mac} לא רוצים עדכונים? ב-`settings.json` (בתיקייה **מערכת**): `"auto_update": false`.
 
 **אחרי הפעלה מחדש של המחשב:** לא צריך לעשות כלום.
 - הסידור עולה לבד עם המחשב, בשקט וברקע.
@@ -232,6 +235,7 @@
 | קבצים נשארו בהורדות | אולי קובץ היה פתוח בתוכנה אחרת. סוגרים אותו, והסידור ינסה שוב בעוד 10 דקות. או: לחיצה כפולה על **סדר הורדות**. |
 | קבצים נכנסו ל"אחר" | מעבירים ביד, או מוסיפים מילה (נספח). |
 | הקבצים לא מסתדרים בכלל | לחיצה כפולה שוב על **התקנת סידור אוטומטי**. זה בטוח, אפשר כמה פעמים. |
+| הודעה "אין הרשאה לתיקייה ..." | {mac}**הגדרות המערכת** ← **פרטיות ואבטחה** ← **קבצים ותיקיות** ← **סדר מהמודל** (MoodleSorter) ← מדליקים את התיקייה שבהודעה (הורדות, מסמכים, iCloud Drive).{/mac}{win}תוכנת אבטחה חוסמת את התיקייה. מאשרים בה את **סדר מהמודל** (MoodleSorter).{/win}{both}Mac: הגדרות המערכת ← פרטיות ואבטחה ← קבצים ותיקיות ← **סדר מהמודל** ← מדליקים את התיקייה. Windows: מאשרים את **סדר מהמודל** בתוכנת האבטחה.{/both} |
 | הודעה "❌ משהו השתבש" | מנסים שוב. חוזר? שולחים את ההודעה למי שנתן לכם את הכלי. |
 
 :::נספח טכני (למי שרוצה לדעת יותר)
@@ -261,6 +265,7 @@
 - `downloads`: תיקיית הורדות אחרת (ריק = תיקיית ההורדות של המחשב).
 - `ignore_for_duplicates`: תיקיות שלא נבדקות ככפולים (ברירת מחדל: "משנה שעברה").
 - `moodle_url`: המודל שנפתח ב-Chrome בהתקנה (ריק = אריאל).
+- `auto_update`: `true` (ברירת מחדל) = מתעדכן לבד פעם ביום; `false` = לא. (תיקיית הכלי של המפתח, זו עם התיקייה **בנייה**, לא מתעדכנת כך.)
 
 ### התוסף
 - **מאיפה:** חנות Chrome (https://chromewebstore.google.com/detail/jgmiocjhmgdcodakjlfnigmgapbdfhej). ההתקנה מוסיפה אותו בדרך הרשמית של Chrome לתוכנות: {win}מפתח ברישום של Windows (`HKCU\Software\Google\Chrome\Extensions`){/win}{mac}במק macOS לא מאפשר את זה, ולכן ההתקנה פותחת את דף התוסף בחנות ואתם לוחצים "הוספה ל-Chrome"{/mac}{both}Windows: מפתח ב-`HKCU\Software\Google\Chrome\Extensions` · Mac: macOS לא מאפשר את זה, ולכן ההתקנה פותחת את דף התוסף בחנות ואתם לוחצים "הוספה ל-Chrome"{/both}. Chrome מבקש מכם להפעיל אותו. הוא אף פעם לא מופעל בלי אישור שלכם.
@@ -287,7 +292,7 @@
 **Sader Mehamoodle** downloads new Moodle course files every night and sorts them into course folders, by itself. It works with any Moodle site: pick your university in the extension's settings page (it opens after installing), or choose "אחר" (other) and type your Moodle's address. Outside Ariel, the courses Moodle shows as "In progress" are downloaded first; click the extension icon inside Moodle to choose others.
 
 0. Extract the ZIP into Documents{win} (right-click → Extract All → Browse → Documents → Extract){/win}{mac} (double-click, then move "סדר מהמודל" to Documents){/mac}. Needs {win}Windows 10/11{/win}{mac}an Apple-silicon Mac{/mac}{both}Windows 10/11 or an Apple-silicon Mac{/both}, Google Chrome, and a Moodle account.
-1. **Install:** double-click {win}`התקנת סידור אוטומטי.bat` (SmartScreen: More info → Run anyway; "Security Warning": Run){/win}{mac}`התקנת סידור אוטומטי.command` (if blocked: System Settings → Privacy & Security → Open Anyway){/mac}{both}`Windows/התקנת סידור אוטומטי.bat` or `Mac/התקנת סידור אוטומטי.command`{/both} and answer 6 short questions (Enter = default; question 6 is your university; question 5 lets it find Moodle files you already have elsewhere, matched by content, and move them into the course folder instead of keeping a second copy).
+1. **Install:** double-click {win}`התקנת סידור אוטומטי.bat` (SmartScreen: More info → Run anyway; "Security Warning": Run){/win}{mac}`התקנת סידור אוטומטי` (macOS asks once whether to open an app downloaded from the Internet: Open; it is signed and notarized by Apple){/mac}{both}`Windows/התקנת סידור אוטומטי.bat` or `Mac/התקנת סידור אוטומטי`{/both} and answer 6 short questions (Enter = default; question 6 is your university; question 5 lets it find Moodle files you already have elsewhere, matched by content, and move them into the course folder instead of keeping a second copy).
 2. **In Chrome, once:** {win}click **Enable extension** when Chrome says a new extension was added (if not: restart Chrome, or install it from https://chromewebstore.google.com/detail/jgmiocjhmgdcodakjlfnigmgapbdfhej){/win}{mac}on the Chrome Web Store tab that opens, click **Add to Chrome** (macOS does not let programs add Chrome extensions){/mac}{both}Windows: click **Enable extension** when Chrome says a new extension was added (if not: restart Chrome). Mac: on the Chrome Web Store tab that opens, click **Add to Chrome**{/both}, pick your university on the settings page that opens and click "שמירה" (save), and sign in to Moodle on the page that opens.
 
 That's all. A few minutes later the first download runs (this semester's courses); then every night at 1:00 only new files are downloaded, in a background tab, and sorted into `<Documents>/מודל/<course>/<category>` with a notification. The computer must be on and Chrome open (missed runs catch up a few minutes after Chrome starts). Download now: right-click the extension icon → Options → "להוריד עכשיו". Choose courses/files: click the extension icon inside Moodle.

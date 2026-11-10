@@ -52,7 +52,7 @@ async function welcome() {
 chrome.storage.onChanged.addListener(ch => { if (ch.enabled || ch.hour || ch.minute) schedule(); });
 chrome.alarms.onAlarm.addListener(a => { if (a.name === ALARM || a.name === 'catchup') run('auto'); });
 chrome.runtime.onMessage.addListener((m, _s, reply) => {
-  if (m && m.cmd === 'runNow') { run('manual').then(r => reply(r)); return true; }
+  if (m && m.cmd === 'runNow') { run('manual').then(r => { if (r && r.error === 'choose') openChooser(); reply(r); }); return true; }
   if (m && m.cmd === 'firstLogin') signInThenRun();              // the university was just picked on the settings page
 });
 
@@ -77,7 +77,22 @@ chrome.notifications.onClicked.addListener(async id => {
   chrome.notifications.clear(id);
   if (id === 'choose') { chrome.runtime.openOptionsPage(); return; }
   if (id === 'login') signInThenRun();
+  if (id === 'pick') openChooser();
 });
+
+// A new install downloads nothing until the user has ticked their courses once (v6.5): the course window opens on Moodle.
+async function showChooser(tabId) {
+  await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', func: () => { window.__mdlAuto = false; } });
+  await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', files: ['moodle_download.js'] });
+}
+async function openChooser() {
+  const c = await cfg();
+  const origin = new URL(c.site).origin;
+  let tab;
+  try { tab = await chrome.tabs.create({ url: origin + c.loginPath, active: true }); }
+  catch (e) { tab = (await chrome.windows.create({ url: origin + c.loginPath, focused: true })).tabs[0]; }
+  if (await waitForMoodle(tab.id, origin, 10 * 60 * 1000)) { try { await showChooser(tab.id); } catch (e) {} }
+}
 
 async function signInThenRun() {
   // open the sign-in page; once the user is back on Moodle (signed in), download right away instead of tomorrow
@@ -86,7 +101,10 @@ async function signInThenRun() {
   let tab;
   try { tab = await chrome.tabs.create({ url: origin + c.loginPath, active: true }); }
   catch (e) { tab = (await chrome.windows.create({ url: origin + c.loginPath, focused: true })).tabs[0]; }   // no window open
-  if (await waitForMoodle(tab.id, origin, 10 * 60 * 1000)) run('after-login');
+  if (await waitForMoodle(tab.id, origin, 10 * 60 * 1000)) {
+    const r = await run('after-login');
+    if (r && r.error === 'choose') { try { await showChooser(tab.id); } catch (e) {} }   // just signed in: pick the courses here
+  }
 }
 
 async function waitForMoodle(tabId, origin, ms) {
@@ -136,7 +154,8 @@ async function run(why) {
       result = { error: 'login' };
       notify('login', 'סדר מהמודל: צריך להתחבר למודל', 'המודל מבקש להתחבר. לחצו כאן והתחברו (הסיסמה נשארת רק אצלכם), וההורדה תתחיל מיד אחרי זה.');
     } else {
-      await chrome.scripting.executeScript({ target: { tabId: tab.id }, world: 'MAIN', func: () => { window.__mdlAuto = true; window.__mdlAutoResult = null; } });
+      await chrome.scripting.executeScript({ target: { tabId: tab.id }, world: 'MAIN', args: [!c.lastRun],
+        func: needChoice => { window.__mdlAuto = true; window.__mdlAutoResult = null; window.__mdlNeedChoice = needChoice; } });
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, world: 'MAIN', files: ['moodle_download.js'] });
       const end = Date.now() + 45 * 60 * 1000;
       while (Date.now() < end) {
@@ -150,7 +169,9 @@ async function run(why) {
         if (!busy.length) break;
         await sleep(5000);
       }
-      if (result.downloaded) notify('done', 'סדר מהמודל', `ירדו ${result.downloaded} קבצים חדשים. הם מסתדרים בתיקיות.`);
+      if (result.error === 'choose' && why === 'auto')
+        notify('pick', 'סדר מהמודל: אילו קורסים להוריד?', 'לחצו כאן: נפתח המודל עם רשימת הקורסים. מסמנים את הקורסים שלכם ← המשך ← הורד. מכאן ההורדה הלילית תוריד רק אותם.');
+      else if (result.downloaded) notify('done', 'סדר מהמודל', `ירדו ${result.downloaded} קבצים חדשים. הם מסתדרים בתיקיות.`);
       else if (result.errors) notify('done', 'סדר מהמודל', `לא ירדו קבצים חדשים (${result.errors} שגיאות). אפשר לנסות שוב מהתוסף.`);
     }
   } catch (e) {

@@ -4,7 +4,10 @@
 #     and מערכת/תוסף Chrome (the extension, from בנייה/extension + moodle_download.js) for installing it by hand
 #   - two ZIPs for sharing: "לשיתוף/סדר מהמודל v<N> - Windows.zip" and "... - Mac.zip" (launchers at the top, one OS each).
 #     They include the no-Python program when it was built: מערכת/bin-win (build_windows.py), מערכת/bin-mac (בניית גרסת Mac).
-import hashlib, html, os, re, sys, urllib.parse, zipfile
+#   - Mac launchers: signed + notarized apps ("<name>.app", built by בניית גרסת Mac from mac-launcher/) when they exist,
+#     otherwise the old .command files. The apps are copied into Mac/ by the Mac build itself; here a .command whose app is
+#     in Mac/ is removed, and the Mac ZIP takes the apps from SADER_MAC_LAUNCHERS (that build's folder).
+import hashlib, html, json, os, re, sys, urllib.parse, zipfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent         # the "בנייה" folder (maintainer only)
@@ -230,11 +233,18 @@ def program_files(folder, prefix):
             if f.is_symlink():
                 out[rel] = (b"", 0o120777, os.readlink(f))
             elif f.is_file():
-                out[rel] = (f.read_bytes(), 0o100755 if os.access(f, os.X_OK) and sys.platform != "win32" or f.name == "MoodleSorter" else 0o100644, None)
+                out[rel] = (f.read_bytes(), 0o100755 if os.access(f, os.X_OK) and sys.platform != "win32" or f.name in ("MoodleSorter", "SaderLauncher") else 0o100644, None)
     return out
 
 
 MAC_BIN = Path(os.environ["SADER_MAC_BIN"]) if os.environ.get("SADER_MAC_BIN") else (KIT / "bin-mac" if sys.platform == "darwin" else None)
+MAC_LAUNCHERS = Path(os.environ["SADER_MAC_LAUNCHERS"]) if os.environ.get("SADER_MAC_LAUNCHERS") else None
+
+
+def mac_app(name, where):
+    """The signed launcher app "<name>.app" in this folder, or None (then the launcher is a .command file)."""
+    app = where / f"{name}.app" if where else None
+    return app if app and (app / "Contents" / "MacOS" / "SaderLauncher").is_file() else None
 
 
 def layout(kind):
@@ -245,7 +255,11 @@ def layout(kind):
     for name, (flag, desc) in LAUNCHERS.items():
         if kind in ("win", "both"):
             files[("Windows/" if kind == "both" else "") + name + ".bat"] = reg(bat(flag, desc, "..\מערכת" if kind == "both" else "מערכת"))
-        if kind in ("mac", "both"):
+        if kind == "both" and mac_app(name, TOP / "Mac"):
+            pass                                                          # the app is already in Mac/ (put there by the Mac build)
+        elif kind == "mac" and mac_app(name, MAC_LAUNCHERS):
+            files.update(program_files(mac_app(name, MAC_LAUNCHERS), f"{name}.app"))
+        elif kind in ("mac", "both"):
             files[("Mac/" if kind == "both" else "") + name + ".command"] = reg(command(flag, desc, "../מערכת" if kind == "both" else "מערכת"), True)
     for f in SYSTEM:
         files[f] = reg((TOP / f).read_bytes())
@@ -266,6 +280,9 @@ own = layout("both")
 for stale in ("התקנת כפתור.html",):                                # replaced by the extension in v6.3
     if (TOP / stale).exists():
         (TOP / stale).unlink()
+for name in LAUNCHERS:                                               # replaced by the signed app (v6.4.1)
+    if mac_app(name, TOP / "Mac") and (TOP / "Mac" / f"{name}.command").exists():
+        (TOP / "Mac" / f"{name}.command").unlink()
 for p, (b, m, link) in own.items():
     if p not in SYSTEM and not p.startswith("מערכת/bin-"):
         (TOP / p).parent.mkdir(parents=True, exist_ok=True)
@@ -296,3 +313,33 @@ for old in out_dir.glob("סדר מהמודל v*.zip"):
     if f"v{VERSION} - " not in old.name and old not in keep:
         old.unlink()
 print(f"v{VERSION}: own layout {len(own)} files; iPad bookmark {ipad_len} chars")
+
+
+# ---------------- the self-update (v6.5): files for a GitHub release ----------------
+# בנייה/release/ gets ASCII-named copies of the ZIPs ("sader-mac-<V>.zip", "sader-win-<V>.zip") and update.json with
+# their SHA-256. A ZIP goes in only if its program really is this version: Mac = built now with signed + notarized
+# launchers; Windows = מערכת/bin-win/version.txt (written by build_windows.py) says this version. Publishing is a
+# separate, manual step (printed below); kits from the ZIP check the latest release once a day.
+REL = HERE / "release"
+REL.mkdir(exist_ok=True)
+try:
+    upd = json.loads((REL / "update.json").read_text(encoding="utf-8"))
+except (OSError, ValueError):
+    upd = {}
+if upd.get("version") != VERSION:
+    upd = {"version": VERSION, "assets": {}}
+    for old in REL.glob("sader-*.zip"):
+        old.unlink()
+win_ver = (KIT / "bin-win" / "version.txt").read_text(encoding="utf-8").strip() if (KIT / "bin-win" / "version.txt").exists() else ""
+ready = {"mac": MAC_BIN is not None and MAC_LAUNCHERS is not None, "win": win_ver == VERSION}
+for kind, label in (("mac", "Mac"), ("win", "Windows")):
+    src = out_dir / f"סדר מהמודל v{VERSION} - {label}.zip"
+    if ready[kind] and src.exists():
+        name = f"sader-{kind}-{VERSION}.zip"
+        data = src.read_bytes()
+        (REL / name).write_bytes(data)
+        upd["assets"][kind] = {"name": name, "size": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+(REL / "update.json").write_text(json.dumps(upd, indent=1), encoding="utf-8")
+have = ", ".join(sorted(upd["assets"])) or "none"
+print(f"release v{VERSION}: {have}" + ("" if ready["win"] else "  (Windows: the program in bin-win is not v" + VERSION + " yet; build it on the PC)"))
+

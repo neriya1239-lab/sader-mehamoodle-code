@@ -56,7 +56,7 @@ def version_file(name, exe, description):
 version_file("version_cli.txt", "MoodleSorter.exe", "סדר מהמודל")
 version_file("version_bg.txt", "MoodleSorterBg.exe", "סדר מהמודל (ברקע)")
 (WORK / "MoodleSorter.spec").write_text("""
-a = Analysis(['sort_downloads.py'], excludes=['tkinter', 'unittest', 'pydoc', 'doctest', 'test', 'pdb', 'xmlrpc', 'sqlite3', 'ssl', '_ssl', '_hashlib', 'decimal', '_decimal', 'lzma', '_lzma', 'bz2', '_bz2', '_zstd', 'compression.zstd', 'socket', '_socket', 'email', 'http'])
+a = Analysis(['sort_downloads.py'], excludes=['tkinter', 'unittest', 'pydoc', 'doctest', 'test', 'pdb', 'xmlrpc', 'sqlite3', 'decimal', '_decimal', 'lzma', '_lzma', 'bz2', '_bz2', '_zstd', 'compression.zstd'])   # (v6.5: ssl/socket/http/email stay: the self-update downloads over HTTPS)
 pyz = PYZ(a.pure)
 common = dict(exclude_binaries=True, icon='MoodleSorter.ico', upx=False, strip=False)
 cli = EXE(pyz, a.scripts, [], name='MoodleSorter', console=True, version='version_cli.txt', **common)
@@ -69,5 +69,6 @@ r = subprocess.run([str(out / "MoodleSorter.exe"), "--version"], capture_output=
 assert r.returncode == 0 and VERSION in r.stdout, (r.returncode, r.stdout, r.stderr)
 shutil.rmtree(KIT / "bin-win", ignore_errors=True)
 shutil.copytree(out, KIT / "bin-win")
+(KIT / "bin-win" / "version.txt").write_text(VERSION, encoding="utf-8")   # _build_release.py puts it in the update only if it matches
 size = sum(f.stat().st_size for f in (KIT / "bin-win").rglob("*") if f.is_file())
 print(f"built bin-win v{VERSION}: {sum(1 for f in (KIT / 'bin-win').rglob('*') if f.is_file())} files, {size / 1e6:.1f} MB; {r.stdout.strip()}")

@@ -11,6 +11,7 @@ function describe(r) {
   const when = new Date(r.at).toLocaleString('he-IL');
   if (r.error === 'login') return `${when}: המודל ביקש להתחבר, ולכן לא ירד כלום.`;
   if (r.error === 'no-site') return `${when}: עוד לא נבחרה אוניברסיטה, ולכן לא ירד כלום.`;
+  if (r.error === 'choose') return `${when}: עוד לא נבחרו קורסים, ולכן לא ירד כלום. בתוך המודל לוחצים על סמל סדר מהמודל ובוחרים קורסים.`;
   if (r.error) return `${when}: לא הצליח (${r.error}).`;
   return `${when}: ירדו ${r.downloaded || 0} קבצים חדשים, ${r.skipped || 0} כבר היו` + (r.errors ? `, ${r.errors} שגיאות` : '') + '.';
 }

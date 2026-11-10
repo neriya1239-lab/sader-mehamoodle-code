@@ -12,19 +12,20 @@
 #
 # Usage (the launchers in the kit do this for you; or MoodleSorter.exe / python sort_downloads.py with the same flags):
 #   python sort_downloads.py              -> shows what it would do (nothing moves)
-#   python sort_downloads.py --ask        -> shows the plan, then asks "לבצע? (כ/ל)"   (the "סדר הורדות" launcher)
+#   python sort_downloads.py --ask        -> shows the plan, then asks "לבצע? (Enter = כן, ל = לא)"   (the "סדר הורדות" launcher)
 #   python sort_downloads.py --apply      -> sorts without asking
 #   python sort_downloads.py --undo       -> shows the last run and asks, then puts it back   (the "ביטול סידור אחרון" launcher)
 #   python sort_downloads.py --setup      -> settings wizard (the "הגדרות" launcher)
 #   python sort_downloads.py --install    -> automatic sorting in the background, also after restart
 #   python sort_downloads.py --uninstall  -> removes the automatic sorting
 #   python sort_downloads.py --watch      -> the background sorter itself (used by --install)
+#   python sort_downloads.py --update     -> check now for a newer version (ZIP installs update themselves once a day)
 
 import argparse, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, time, unicodedata, urllib.parse
 from collections import Counter
 from pathlib import Path
 
-VERSION = "6.4"
+VERSION = "6.5"
 FROZEN = getattr(sys, "frozen", False)             # True in the no-Python build (made with PyInstaller)
 for _s in (sys.stdin, sys.stdout, sys.stderr):     # None when running hidden in the background
     if _s and sys.platform == "win32" and not _s.isatty():
@@ -134,6 +135,7 @@ DEFAULTS = {
     "filename_style": "original",       # or "clean"
     "find_existing": False,             # look on the computer for files from Moodle the user already has (asked in the wizard)
     "moodle_url": "",                   # the Moodle the installer opens in Chrome ("" = Ariel's student sign-in); question 6
+    "auto_update": True,                # a kit from the ZIP updates itself once a day (see check_for_update); false = never
     "category_names": {"lectures": "הרצאות", "tutorials": "תרגולים", "homework": "שיעורי בית", "exams": "מבחנים",
                        "assignments": "מטלות", "syllabus": "סילבוס", "other": "אחר"},
     "course_folders": {},               # part of a Moodle course name -> folder name
@@ -297,10 +299,24 @@ def _word_in(w, text):
     return w in text
 
 
+# Built-in rules, applied before the keywords of settings.json (v6.5, checked against real course files):
+MATH_TESTS = re.compile(r"מבח(?:ן|ני)\s+(?:ה?שורש|ה?מנה|ה?השוואה(?:\s+הגבולי)?|ה?אינטגרל|לי?יבניץ|קושי|ד['׳]?א?למבר|ה?התכנסות)")
+CLASS_WORK = ("תרגיל כיתה", "תרגילי כיתה", "דף תרגילים", "דפי תרגילים")
+LESSON_SUMMARY = re.compile(r"סיכום\s+(?:ה?שיעור|ה?הרצא)")
+
+
 def category_key(entry, s):
     if entry.get("type") == "assign":
         return "assignments"
-    text = " ".join(str(entry.get(k, "")) for k in ("title", "section", "fileName")).lower()
+    # a convergence test of calculus ("מבחן השורש") is not an exam: it is taken out before the words are matched
+    text = MATH_TESTS.sub(" ", " ".join(str(entry.get(k, "")) for k in ("title", "section", "fileName")).lower())
+    own = MATH_TESTS.sub(" ", " ".join(str(entry.get(k, "")) for k in ("title", "fileName")).lower())   # without the section
+    if any(w in own for w in CLASS_WORK):                     # "פתרון תרגיל כיתה 3", "דף תרגילים 2" = tutorials (not homework)
+        return "tutorials"
+    if LESSON_SUMMARY.search(own):                            # "סיכום שיעור 4", "סיכום הרצאה" = lectures
+        return "lectures"
+    if "סיכום" in own:                                        # another summary ("סיכום מור - אינדוקציה") = tutorials
+        return "tutorials"
     for key, words in s["keywords"].items():
         if any(_word_in(w.lower(), text) for w in words):
             return key
@@ -602,15 +618,35 @@ def remove_duplicates(plan, downloads, log=None):
     return removed
 
 
-def confirm(question, summary=""):
-    """Yes/no. In a real Windows console window: a message box (Hebrew shows correctly there). Otherwise: כ/ל + Enter."""
+YES_WORDS = ("כ", "כן", "y", "yes", "f")          # "f" / "k" = the keys of כ / ל when the keyboard is on English
+NO_WORDS = ("ל", "לא", "n", "no", "k")
+
+
+def yes_no(answer, default=None):
+    """True / False for a typed answer (Hebrew or English keyboard), `default` for Enter, None if not understood."""
+    a = str(answer).strip().strip(".!").lower()
+    if not a:
+        return default
+    return True if a in YES_WORDS else False if a in NO_WORDS else None
+
+
+def confirm(question, summary="", enter_yes=True):
+    """Yes/no. In a real Windows console window: a message box (Hebrew shows correctly there). Otherwise a typed answer:
+    Enter = yes (enter_yes: sorting, which 'ביטול סידור אחרון' can undo) or Enter = no (the undo itself). An answer it
+    does not know is asked again (up to 3 times), never taken as a silent "no"."""
     if isinstance(sys.stdout, _BidiConsole):
         return bool(msgbox(f"{summary}\n\n{question}".strip(), yes_no=True))
+    hint = "(Enter = כן, ל = לא)" if enter_yes else "(כ = כן, Enter = לא)"
     try:
-        print(f"\n{question} (כ/ל): ", end="", flush=True)
-        return input().strip().lower() in ("כ", "כן", "y", "yes", "f")      # "f" = the כ key on an English keyboard
+        for _ in range(3):
+            print(f"\n{question} {hint}: ", end="", flush=True)
+            r = yes_no(input(), default=enter_yes)
+            if r is not None:
+                return r
+            print("לא הבנתי. כותבים כ (כן) או ל (לא) ולוחצים Enter.")
     except EOFError:
-        return False
+        pass
+    return False
 
 
 def undo(ask_first=True):
@@ -630,7 +666,7 @@ def undo(ask_first=True):
     summary = (f"הסידור האחרון ({when}) העביר {len(names)} קבצים:\n" + "\n".join(f"  {n}" for n in names[:15])
                + (f"\n  ...ועוד {len(names) - 15}" if len(names) > 15 else ""))
     print(summary)
-    if ask_first and not confirm("להחזיר אותם לתיקיית ההורדות?", summary):
+    if ask_first and not confirm("להחזיר אותם לתיקיית ההורדות?", summary, enter_yes=False):
         print("לא בוצע כלום."); return
     back = kept = 0
     for mv in log["moves"]:
@@ -691,7 +727,7 @@ def setup(s):
     c = ask("   בחירה", str(layouts.index(s["layout"]) + 1) if s["layout"] in layouts else "1")
     if c in ("1", "2", "3", "4"):
         s["layout"] = layouts[int(c) - 1]
-    if "{category}" in s["layout"] and ask("\n3. לשנות את שמות תיקיות הסוג? (כ/ל)", "ל") in ("כ", "כן", "y", "f"):
+    if "{category}" in s["layout"] and yes_no(ask("\n3. לשנות את שמות תיקיות הסוג? (כ/ל)", "ל"), False):
         for k, v in list(s["category_names"].items()):
             s["category_names"][k] = safe_name(ask(f"   {v}", v), v)
     print("\n4. שמות הקבצים:  1) כמו במודל   2) מנוקים (בלי _ , %20 ו-(0))")
@@ -786,6 +822,8 @@ def take_lock(wait=0):
 
 
 def notify(message, title="סדר מהמודל"):
+    if os.environ.get("SADER_NO_NOTIFY"):                     # tests: print instead of showing it on the screen
+        print(f"(הודעה: {message})"); return
     try:
         if sys.platform == "darwin":
             subprocess.run(["osascript", "-e", "on run argv\ndisplay notification (item 1 of argv) with title (item 2 of argv)\nend run",
@@ -835,12 +873,40 @@ def code_stamp():
 
 
 def has_manifest(downloads):
-    """The cheap check done while idle: only the names in Downloads, nothing is opened."""
+    """The cheap check done while idle: only the names in Downloads, nothing is opened. A folder this program is not
+    allowed to read raises PermissionError (the caller tells the user how to allow it); other problems = False."""
     try:
         with os.scandir(downloads) as it:
             return any(e.name.startswith("moodle_manifest_") for e in it)
+    except PermissionError:
+        raise
     except OSError:
         return False
+
+
+def no_access_text(path):
+    """What to do when the system does not let this program read a folder (macOS: Privacy & Security)."""
+    path = Path(path)
+    if sys.platform == "darwin":
+        who = f"{APP_NAME} (MoodleSorter)" if FROZEN else "python3 (או Terminal)"
+        return (f"אין הרשאה לתיקייה {path.name}, ולכן הקבצים לא מסתדרים.\n"
+                f"לתיקון: הגדרות המערכת > פרטיות ואבטחה > קבצים ותיקיות > {who} > להדליק את {path.name}"
+                + (" ואת iCloud Drive" if "Mobile Documents" in str(path) or "iCloud" in str(path) else "") + ".")
+    return f"אין הרשאה לתיקייה {path} ({path.name}), ולכן הקבצים לא מסתדרים. אולי תוכנת אבטחה חוסמת אותה."
+
+
+def folder_problem(path):
+    """"" if the folder can be read, else a Hebrew sentence that says what is wrong and how to fix it."""
+    try:
+        with os.scandir(path) as it:
+            next(it, None)
+        return ""
+    except PermissionError:
+        return no_access_text(path)
+    except FileNotFoundError:
+        return f"התיקייה לא נמצאה: {path}\nאפשר לבחור תיקייה אחרת בלחיצה על 'הגדרות'."
+    except OSError as e:
+        return f"אין גישה לתיקייה {path} ({e.strerror or e})."
 
 
 def watch(s):
@@ -867,13 +933,23 @@ def watch(s):
     settings_time = SETTINGS_FILE.stat().st_mtime if SETTINGS_FILE.exists() else 0
     stamp, new_stamp, retry_at = code_stamp(), None, 0.0
     last_busy = last_fix = time.time()
-    hold_until = 0.0
+    hold_until, last_update, warned = 0.0, 0.0, {}
+
+    def warn(text):                                           # a problem the user must fix: say it, at most every 6 hours
+        if time.time() - warned.get(text, 0) > 6 * 3600:
+            warned[text] = time.time()
+            print(f"{time.strftime('%H:%M:%S')} ⚠ {text}")
+            notify(text.split("\n")[0] + (" " + text.split("\n")[1] if "\n" in text else ""))
+
     while True:
         time.sleep(10 if time.time() - last_busy < 600 else 20)
         try:
             now = time.time()
             if now - last_fix > 600:
                 fix_mac_launchers(); last_fix = now
+            if now - last_update > 3600:                        # (the check itself runs at most once a day)
+                last_update = now
+                check_for_update(s)
             st = code_stamp()                                   # an update arrived: wait until it stops changing, then restart
             if st != stamp and now >= retry_at:
                 if st == new_stamp:
@@ -891,8 +967,15 @@ def watch(s):
                 settings_time, s = now_time, load_settings()
                 downloads, dest = downloads_dir(s), dest_root(s)
                 print(f"{time.strftime('%H:%M:%S')} ההגדרות עודכנו. הורדות: {downloads}  קורסים: {dest}")
-            if not has_manifest(downloads) or not dest.is_dir():
+            try:
+                found = has_manifest(downloads)
+            except PermissionError:
+                warn(no_access_text(downloads)); continue
+            if not found or not dest.is_dir():
                 seen.clear(); last_sizes = None; continue
+            problem = folder_problem(dest)
+            if problem:
+                warn(problem); continue
             last_busy = now
             manifests = sorted(downloads.glob("moodle_manifest_*.json"))
             if now < hold_until and not set(manifests) - seen:     # files that couldn't be moved: retry later, not every 10 s
@@ -1395,12 +1478,215 @@ def fix_mac_launchers(report=False):
         print(f"{time.strftime('%H:%M:%S')} קבצי .command בתיקיית הכלי: {len(kit_commands())}, תוקנו: {len(set(fixed))}"
               + (f" ({', '.join(sorted(set(fixed)))})" if fixed else ""))
 
+# ---------------- updating itself (a kit from the ZIP; v6.5) ----------------
+# Once a day the background sorter asks GitHub for the latest release of the public code repository. The release has
+# update.json ({"version": "6.6", "assets": {"mac": {"name", "sha256", "size"}, "win": {...}}}) and the same ZIP that is
+# shared by hand. If it is newer: download, check the SHA-256 (and on the Mac: Apple signature, notarization and the
+# developer's Team ID), check that the new program runs and reports that version, then swap the program files of THIS kit
+# (never settings.json, logs or the user's files). The running sorter notices its files changed and restarts itself.
+# Not done for the maintainer's kit (it has the folder "בנייה" and is shared through iCloud, so it updates by iCloud),
+# for a kit without the no-Python program, or when settings.json has "auto_update": false.
+UPDATE_REPO = "neriya1239-lab/sader-mehamoodle-code"
+UPDATE_URL = os.environ.get("SADER_UPDATE_URL") or f"https://api.github.com/repos/{UPDATE_REPO}/releases/latest"  # (env: tests)
+TEAM_ID = "7GZ776UH7S"                                       # the developer's Apple Team ID (Developer ID signature)
+UPDATE_STATE = _local_dir() / "update_state.json"
+UPDATE_OS = {"darwin": "mac", "win32": "win"}.get(sys.platform)
+UPDATE_ROOT = APP_NAME                                       # the folder inside the ZIP
+LAUNCHER_EXT = ".app" if sys.platform == "darwin" else ".bat"
+
+
+def version_tuple(v):
+    return tuple(int(x) for x in re.findall(r"\d+", str(v))[:4]) or (0,)
+
+
+def update_blocked(s):
+    """Why this kit does not update itself ("" = it may)."""
+    norm = lambda n: unicodedata.normalize("NFC", n)
+    if not UPDATE_OS:
+        return "מערכת הפעלה בלי עדכון אוטומטי"
+    if not s.get("auto_update", True):
+        return "העדכון האוטומטי כבוי (auto_update: false)"
+    try:
+        if any(e.is_dir() and norm(e.name) == norm("בנייה") for e in TOP.iterdir()):
+            return "תיקיית הכלי המשותפת (מתעדכנת דרך iCloud)"
+    except OSError as e:
+        return f"אין גישה לתיקיית הכלי ({e})"
+    if norm(KIT.name) != norm("מערכת") or not (TOP / f"התקנת סידור אוטומטי{LAUNCHER_EXT}").exists():
+        return "לא תיקייה שחולצה מה-ZIP"
+    if not (BIN / CLI_NAME).is_file():
+        return "אין כאן את התוכנה (גרסת Python)"
+    return ""
+
+
+def _fetch(url, limit):
+    """Bytes from an https address (a local http address only in tests), at most `limit` bytes."""
+    import urllib.request
+    test = os.environ.get("SADER_UPDATE_URL", "")
+    if not (url.startswith("https://") or (test.startswith("http://127.0.0.1") and url.startswith("http://127.0.0.1"))):
+        raise OSError(f"כתובת לא מאובטחת: {url}")
+    req = urllib.request.Request(url, headers={"User-Agent": f"SaderMehamoodle/{VERSION}", "Accept": "application/octet-stream, application/json"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        data = r.read(limit + 1)
+    if len(data) > limit:
+        raise OSError("הקובץ גדול מדי")
+    return data
+
+
+def _run(cmd, timeout=120):
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, errors="replace",
+                          creationflags=0x08000000 if sys.platform == "win32" else 0)
+
+
+def _verify_mac_app(app):
+    """An app from the update: signed by this developer (Team ID), not changed since, and notarized by Apple."""
+    r = _run(["codesign", "--verify", "--deep", "--strict", str(app)])
+    if r.returncode != 0:
+        raise OSError(f"החתימה של {app.name} לא תקינה: {r.stderr.strip()[:200]}")
+    r = _run(["codesign", "-dv", str(app)])
+    if f"TeamIdentifier={TEAM_ID}" not in r.stderr:
+        raise OSError(f"{app.name} לא חתום על ידי המפתח של הכלי")
+    r = _run(["spctl", "-a", "-t", "exec", "-vv", str(app)])
+    if r.returncode != 0 or "Notarized" not in r.stderr:
+        raise OSError(f"{app.name} לא מאושר על ידי Apple: {r.stderr.strip()[:200]}")
+
+
+def _safe_members(zip_path):
+    """The ZIP's names: all inside the one top folder, no '..', no absolute paths, nothing called settings.json."""
+    import zipfile
+    with zipfile.ZipFile(zip_path) as z:
+        names = z.namelist()
+    for n in names:
+        parts = n.replace("\\", "/").split("/")
+        if n.startswith(("/", "\\")) or ":" in parts[0] or ".." in parts or unicodedata.normalize("NFC", parts[0]) != UPDATE_ROOT:
+            raise OSError(f"שם לא תקין בקובץ העדכון: {n}")
+        if parts[-1] == "settings.json":
+            raise OSError("קובץ העדכון מכיל settings.json")
+    return names
+
+
+def apply_update(zip_bytes, version):
+    """Swap this kit's program files for the ones in the update ZIP (already checked by SHA-256). True if done."""
+    root = TOP / ".sader-update"                            # next to the kit: same disk, so the swap is a rename
+    shutil.rmtree(root, ignore_errors=True)
+    root.mkdir(exist_ok=True)                               # (Windows: old files of a button window still open may stay here)
+    if sys.platform == "win32":
+        try:
+            import ctypes; ctypes.windll.kernel32.SetFileAttributesW(str(root), 0x2)   # hidden
+        except Exception:
+            pass
+    staging = root / f"u{os.getpid()}_{int(time.time())}"
+    staging.mkdir()
+    try:
+        zp = staging / "update.zip"
+        zp.write_bytes(zip_bytes)
+        _safe_members(zp)
+        out = staging / "new"
+        if sys.platform == "darwin":                          # Apple's tool keeps the apps' links and permissions
+            r = _run(["ditto", "-x", "-k", str(zp), str(out)])
+            if r.returncode != 0:
+                raise OSError(f"פתיחת העדכון נכשלה: {r.stderr.strip()[:200]}")
+        else:
+            import zipfile
+            with zipfile.ZipFile(zp) as z:
+                z.extractall(out)
+        new = next((d for d in out.iterdir() if unicodedata.normalize("NFC", d.name) == UPDATE_ROOT), None)
+        if not new or not (new / "מערכת" / BIN.name / CLI_NAME).is_file():
+            raise OSError("בעדכון חסרה התוכנה")
+        if sys.platform == "darwin":
+            for app in [*new.glob("*.app"), new / "מערכת" / BIN.name / "MoodleSorter.app"]:
+                _verify_mac_app(app)
+        r = _run([str(new / "מערכת" / BIN.name / CLI_NAME), "--version"], timeout=120)
+        if f"MoodleSorter {version}" not in r.stdout:
+            raise OSError(f"התוכנה החדשה לא רצה כמו שצריך ({r.stdout.strip()[:80]})")
+        # what to swap: the top items (launchers, guide) and the items inside מערכת, except settings.json
+        pairs = [(n, TOP / n.name) for n in new.iterdir() if n.name != "מערכת"]
+        pairs += [(n, KIT / n.name) for n in (new / "מערכת").iterdir() if n.name != "settings.json"]
+        old = staging / "old"; old.mkdir()
+        done = []
+        try:
+            for i, (src, dst) in enumerate(pairs):
+                keep = old / str(i)
+                if dst.exists() or dst.is_symlink():
+                    os.rename(dst, keep)
+                os.rename(src, dst)
+                done.append((dst, keep))
+        except OSError:
+            for dst, keep in reversed(done):                     # put everything back as it was
+                try:
+                    shutil.rmtree(dst) if dst.is_dir() and not dst.is_symlink() else dst.unlink()
+                except OSError:
+                    pass
+                if keep.exists() or keep.is_symlink():
+                    os.rename(keep, dst)
+            src, dst = pairs[len(done)]
+            keep = old / str(len(done))
+            if (keep.exists() or keep.is_symlink()) and not (dst.exists() or dst.is_symlink()):
+                os.rename(keep, dst)
+            raise
+        return True
+    finally:
+        shutil.rmtree(root, ignore_errors=True)               # what is still in use is removed by a later check (clean_update_leftovers)
+
+
+def clean_update_leftovers():
+    """Windows lets the swap move a running program's folder, but not delete it: after an update made while a button window
+    was open, the old files stay in .sader-update until that window is closed. Remove them then (not while an update runs)."""
+    root = TOP / ".sader-update"
+    try:
+        if root.is_dir() and time.time() - root.stat().st_mtime > 600:
+            shutil.rmtree(root, ignore_errors=True)
+    except OSError:
+        pass
+
+
+def check_for_update(s, force=False, verbose=False):
+    """Once a day (force: now): look for a newer version and install it into this kit. Returns a line for the user,
+    or "" when there is nothing to say. Never raises: a failed check is logged and tried again the next day."""
+    say = lambda t: (print(f"{time.strftime('%H:%M:%S')} עדכון: {t}") if not verbose else None, t)[1]
+    why = update_blocked(s)
+    if why:
+        return say(f"לא בודק עדכונים: {why}.") if verbose else ""
+    clean_update_leftovers()
+    try:
+        state = json.loads(UPDATE_STATE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        state = {}
+    if not force and time.time() - state.get("checked", 0) < 20 * 3600:
+        return ""
+    try:
+        UPDATE_STATE.parent.mkdir(parents=True, exist_ok=True)
+        UPDATE_STATE.write_text(json.dumps(dict(state, checked=time.time())), encoding="utf-8")
+    except OSError:
+        pass
+    try:
+        release = json.loads(_fetch(UPDATE_URL, 2 << 20))
+        assets = {a["name"]: a["browser_download_url"] for a in release.get("assets", []) if isinstance(a, dict)}
+        if "update.json" not in assets:
+            return say("אין עדכון זמין.") if verbose else ""
+        info = json.loads(_fetch(assets["update.json"], 1 << 20))
+        version = str(info.get("version", ""))
+        if not re.fullmatch(r"\d+(\.\d+){1,3}", version) or version_tuple(version) <= version_tuple(VERSION):
+            return say(f"הגרסה הכי חדשה כבר מותקנת ({VERSION}).") if verbose else ""
+        asset = (info.get("assets") or {}).get(UPDATE_OS)
+        if not isinstance(asset, dict) or asset.get("name") not in assets or not re.fullmatch(r"[0-9a-f]{64}", str(asset.get("sha256", ""))):
+            return say(f"גרסה {version} עוד לא זמינה למחשב הזה.") if verbose else ""
+        data = _fetch(assets[asset["name"]], 400 << 20)
+        if hashlib.sha256(data).hexdigest() != asset["sha256"] or (asset.get("size") and len(data) != int(asset["size"])):
+            raise OSError("טביעת האצבע (SHA-256) של קובץ העדכון לא תואמת - לא הותקן")
+        apply_update(data, version)
+    except Exception as e:                                    # network, GitHub, a bad file: nothing changed
+        return say(f"לא עודכן ({e}). ננסה שוב מחר.")
+    text = f"סדר מהמודל עודכן לגרסה {version}"
+    print(f"{time.strftime('%H:%M:%S')} {text}")
+    notify(text)
+    return text
+
 
 def main():
     fix_mac_launchers()
     p = argparse.ArgumentParser(description="סדר מהמודל - sort Moodle downloads into course folders")
     g = p.add_mutually_exclusive_group()
-    for flag in ("apply", "ask", "undo", "setup", "install", "uninstall", "watch"):
+    for flag in ("apply", "ask", "undo", "setup", "install", "uninstall", "watch", "update"):
         g.add_argument(f"--{flag}", action="store_true")
     p.add_argument("--downloads"); p.add_argument("--dest"); p.add_argument("--kit", help=argparse.SUPPRESS)
     p.add_argument("--version", action="store_true")
@@ -1420,11 +1706,17 @@ def main():
             return watch(s)
         except KeyboardInterrupt:
             print("\nהסידור האוטומטי הופסק."); return
+    if a.update:
+        return print(check_for_update(s, force=True, verbose=True) or "")
     downloads, dest = downloads_dir(s), dest_root(s)
     if not downloads.is_dir():
         print(f"תיקיית ההורדות לא נמצאה: {downloads}\nאפשר לשנות בלחיצה על 'הגדרות' (או ב-settings.json)."); return
     if not dest.is_dir():
         print(f"תיקיית הקורסים לא נמצאה: {dest}\nלחצו על 'הגדרות' ובחרו תיקייה."); return
+    for folder in (downloads, dest):                            # e.g. macOS privacy settings block this program
+        problem = folder_problem(folder)
+        if problem:
+            print("\n⚠ " + problem); msgbox(problem); return
     print(f"הורדות: {downloads}\nקורסים: {dest}")
     manifests, plan = build_plan(downloads, dest, s)
     if not manifests:
@@ -1442,8 +1734,7 @@ def main():
         if moves and not yes("לבצע?"):
             print("לא בוצע כלום."); return
         log = apply(plan, manifests, dest)
-        if dups and yes(f"למחוק מ-Downloads את {dups} הקבצים הכפולים?"):
-            remove_duplicates(plan, downloads, log)
+        remove_duplicates(plan, downloads, log)               # only exact copies (same SHA-256) of a sorted file
     elif not moves:
         print("\nאין מה להעביר.")
     else:

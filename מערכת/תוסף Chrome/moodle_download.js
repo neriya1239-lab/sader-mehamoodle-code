@@ -15,6 +15,8 @@
   // AUTO: set by the Chrome extension for its nightly run. Then nothing is asked: the courses chosen last time
   // (or this semester's) and every file that isn't excluded are downloaded, only new ones, and the result is
   // left in window.__mdlAutoResult for the extension to read.
+  // __mdlNeedChoice (v6.5): a new install that never chose courses downloads nothing by itself; it reports 'choose'
+  // and the extension opens this window so the user ticks their courses first.
   const AUTO = window.__mdlAuto === true;
   const done = r => { if (AUTO) window.__mdlAutoResult = Object.assign({ finished: true }, r); };
   // ---------- safety checks ----------
@@ -348,6 +350,9 @@
     prefs.lastCourses = ids; prefs.knownCourses = all.map(c => c.id); save('mdl_prefs', prefs);
     chooseFiles(all.filter(c => ids.includes(c.id)));
   };
+  if (AUTO && !prefs.lastCourses.length && window.__mdlNeedChoice === true) {   // a new install: the user picks the courses first
+    done({ error: 'choose' }); return;
+  }
   if (AUTO) {                                                    // nightly run: same choices as last time, only new files
     // plus courses of the current semester that the user was never shown (a new semester starts by itself);
     // a course that was shown and left unticked stays out
