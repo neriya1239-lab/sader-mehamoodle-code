@@ -339,7 +339,7 @@ for kind, label in (("mac", "Mac"), ("win", "Windows")):
         data = src.read_bytes()
         (REL / name).write_bytes(data)
         upd["assets"][kind] = {"name": name, "size": len(data), "sha256": hashlib.sha256(data).hexdigest()}
-(REL / "update.json").write_text(json.dumps(upd, indent=1), encoding="utf-8")
+(REL / "update.json").write_bytes(json.dumps(upd, indent=1).encode("utf-8"))      # LF on every OS (write_text gave CRLF on Windows)
 have = ", ".join(sorted(upd["assets"])) or "none"
 print(f"release v{VERSION}: {have}" + ("" if ready["win"] else "  (Windows: the program in bin-win is not v" + VERSION + " yet; build it on the PC)"))
 

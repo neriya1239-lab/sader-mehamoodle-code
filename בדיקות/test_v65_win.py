@@ -4,12 +4,12 @@
 # Differences from the Mac test: zipfile instead of ditto, no codesign checks, the "update" is the Windows ZIP, and an
 # extra case: a program file of the kit is in use (a button window open) -> the swap fails, everything is put back.
 # All in a temp folder; nothing is installed, no notifications, Chrome/Startup are pointed at test folders.
-import hashlib, http.server, json, os, shutil, subprocess, sys, tempfile, threading, time, zipfile
+import hashlib, http.server, json, os, re, shutil, subprocess, sys, tempfile, threading, time, zipfile
 from pathlib import Path
 
 SRC, REAL_ZIP = Path(sys.argv[1]), Path(sys.argv[2])
 REAL_VER = os.environ.get("TEST_REAL_VER", "6.5")
-CODE_VER = os.environ.get("TEST_CODE_VER", "6.5")          # the VERSION string inside SRC
+CODE_VER = os.environ.get("TEST_CODE_VER") or re.search(r'^VERSION = "([0-9.]+)"', SRC.read_text(encoding="utf-8"), re.M).group(1)   # the VERSION inside SRC
 T = Path(tempfile.mkdtemp(prefix="sader65w_"))
 ok = fail = 0
 

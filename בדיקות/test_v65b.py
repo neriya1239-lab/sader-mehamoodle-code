@@ -97,6 +97,17 @@ want = {
     "פתרון תרגיל 3.pdf": "homework", "תרגיל בית 2.pdf": "homework", "מבחן 2023 מועד א.pdf": "exams",
     "אינפי 1 - 2005 מבחן 1.pdf": "exams", "מבחן השורש - מבחן 2024 מועד ב.pdf": "exams", "הרצאה 5.pdf": "lectures",
     "דף נוסחאות - חדוא 1.pdf": "syllabus", "תרגול 2.pdf": "tutorials",
+    # v6.5.1: real files from the course folders that 6.5 sent to "אחר"
+    "פתרון הערכה חלופית למילואים - אלגברה לינארית.pdf": "exams",
+    "Physics_I_formulae.pdf": "syllabus", "דפי נוסחאות.pdf": "syllabus", "נוסחה לשורשים.pdf": "syllabus",
+    "חדוא 1 מדמח - 2009 סתיו.pdf": "exams",
+    "מערכות משוואות - דף 1 - פתרון מלא.pdf": "homework", "דטרמיננטות - דף 4.pdf": "homework",
+    "מרחבים וקטוריים - תלות ליניארית - דף 2 - תשובות.pdf": "homework",
+    "מטריצות - דף 4 (משוחלפת, סימטרית ואנטי-סימטרית).pdf": "homework",
+    "גבול ורציפות - גבול פונקציה - דף 3 - פתרון מלא.pdf": "homework", "ערכים עצמיים - דף 2 - תשובות.pdf": "homework",
+    # v6.5.1: what must not change
+    "דף נוסחאות למבחן.pdf": "exams", "דף תרגילים 4.pdf": "tutorials", "תרגול 3 - דף 2.pdf": "tutorials",
+    "דף הסבר.pdf": "other", "קיץ.pdf": "other", "מבחן 2009 סתיו מועד א.pdf": "exams", "הרצאה 3 - אביב 2024.pdf": "lectures",
 }
 for fn, cat in want.items():
     for label, s in (("default", s_def), ("Neriya", s_user)):

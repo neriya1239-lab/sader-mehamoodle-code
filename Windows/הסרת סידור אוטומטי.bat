@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-rem "סדר מהמודל" v6.5 - מסיר את הסידור האוטומטי
+rem "סדר מהמודל" v6.5.1 - מסיר את הסידור האוטומטי
 set PYTHONUTF8=1
 set PYTHONIOENCODING=utf-8
 cd /d "%~dp0..\מערכת"

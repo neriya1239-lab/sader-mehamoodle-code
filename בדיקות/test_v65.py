@@ -1,7 +1,7 @@
 # Tests for v6.5: self-update (mock GitHub release on 127.0.0.1), manual-sort duplicates, no-access message.
 # Usage: python3 -I test_v65.py <patched sort_downloads.py> <real signed Mac ZIP (an older version, e.g. 6.4.1)>
 # Everything happens in a temporary folder; nothing is installed, no notifications are shown, the real kit is not touched.
-import hashlib, http.server, json, os, shutil, subprocess, sys, tempfile, threading, zipfile
+import hashlib, http.server, json, os, re, shutil, subprocess, sys, tempfile, threading, zipfile
 from pathlib import Path
 
 SRC, REAL_ZIP = Path(sys.argv[1]), Path(sys.argv[2])
@@ -53,7 +53,7 @@ def make_kit(name, version="6.0", maintainer=False, settings=None):
     top = T / name / "סדר מהמודל"
     (T / name).mkdir()
     subprocess.run(["ditto", "-x", "-k", str(REAL_ZIP), str(T / name)], check=True)
-    code = SRC.read_bytes().replace(b'VERSION = "6.5"', f'VERSION = "{version}"'.encode())
+    code = re.sub(rb'^VERSION = "[0-9.]+"', f'VERSION = "{version}"'.encode(), SRC.read_bytes(), count=1, flags=re.M)
     (top / "מערכת" / "sort_downloads.py").write_bytes(code)
     (top / "מערכת" / "settings.json").write_text(json.dumps(settings or {"dest_root": "/x/mine", "layout": "{course}"}), encoding="utf-8")
     (top / "my notes.txt").write_text("mine")

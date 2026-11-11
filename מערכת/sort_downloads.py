@@ -25,7 +25,7 @@ import argparse, datetime, hashlib, json, os, platform, re, shutil, subprocess, 
 from collections import Counter
 from pathlib import Path
 
-VERSION = "6.5"
+VERSION = "6.5.1"
 FROZEN = getattr(sys, "frozen", False)             # True in the no-Python build (made with PyInstaller)
 for _s in (sys.stdin, sys.stdout, sys.stderr):     # None when running hidden in the background
     if _s and sys.platform == "win32" and not _s.isatty():
@@ -303,6 +303,11 @@ def _word_in(w, text):
 MATH_TESTS = re.compile(r"מבח(?:ן|ני)\s+(?:ה?שורש|ה?מנה|ה?השוואה(?:\s+הגבולי)?|ה?אינטגרל|לי?יבניץ|קושי|ד['׳]?א?למבר|ה?התכנסות)")
 CLASS_WORK = ("תרגיל כיתה", "תרגילי כיתה", "דף תרגילים", "דפי תרגילים")
 LESSON_SUMMARY = re.compile(r"סיכום\s+(?:ה?שיעור|ה?הרצא)")
+# v6.5.1 (from a scan of the real course folders):
+ALT_EXAM = ("הערכה חלופית",)                                   # "פתרון הערכה חלופית למילואים" = exams
+FORMULA_WORDS = ("formulae", "נוסחא", "נוסחה")                 # go where the settings' "נוסחאות" goes (syllabus by default)
+WORKSHEET = re.compile(r"(?<![א-ת])דף\s*\d{1,3}(?!\d)")        # "מערכות משוואות - דף 2 - תשובות" = homework
+SEASON_YEAR = (re.compile(r"(?<![א-ת])(?:ה|ב)?(?:סתיו|אביב|חורף|קיץ)(?![א-ת])"), re.compile(r"(?<!\d)(?:19|20)\d\d(?!\d)"))
 
 
 def category_key(entry, s):
@@ -317,14 +322,22 @@ def category_key(entry, s):
         return "lectures"
     if "סיכום" in own:                                        # another summary ("סיכום מור - אינדוקציה") = tutorials
         return "tutorials"
+    if any(w in own for w in ALT_EXAM):                        # an alternative assessment is an exam
+        return "exams"
+    formula_key = next((k for k, ws in s["keywords"].items() if "נוסחאות" in ws), "syllabus")
     for key, words in s["keywords"].items():
-        if any(_word_in(w.lower(), text) for w in words):
+        extra = FORMULA_WORDS if key == formula_key else ()
+        if any(_word_in(w.lower(), text) for w in (*words, *extra)):
             return key
+    if WORKSHEET.search(own):                                  # an exercise sheet ("דף 3"); "דף תרגילים" was caught above
+        return "homework"
     # no word matched: a numbered series ("2 - Motion in 1D", "אינפי01") or the lecturer's board ("לוח") = lectures
     stem = re.sub(r"\.[A-Za-z0-9]{1,5}$", "", str(entry.get("fileName", "")))
     if (re.match(r"\s*\d{1,2}\s*[-–_.]\s*\S", stem) or re.match(r"\s*\d{1,2}\s*[-–_.]\s*\S", str(entry.get("title", "")))
             or re.fullmatch(r"[^\d\s]{2,}\s?\d{1,3}", stem) or re.search(r"(^|\s)לוח(\s|$)", str(entry.get("section", "")))):
         return "lectures"
+    if all(r.search(own) for r in SEASON_YEAR):                # last resort: a term and a year ("2009 סתיו") = an old exam
+        return "exams"
     return "other"
 
 
