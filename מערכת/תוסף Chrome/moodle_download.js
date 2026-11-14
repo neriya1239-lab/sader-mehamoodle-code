@@ -114,11 +114,11 @@
   const panel = document.createElement('div');
   window.__mdlKit = panel;
   panel.dir = 'rtl';
-  panel.style.cssText = 'position:fixed;top:12px;left:12px;z-index:2147483647;width:400px;max-height:88vh;overflow:auto;background:#fff;color:#111;' +
+  panel.style.cssText = 'position:fixed;top:12px;left:12px;z-index:2147483647;width:400px;max-height:88vh;overflow:auto;background:#fff;color:#111;color-scheme:light;' +
     'border:2px solid #0b4f8a;border-radius:10px;padding:12px;font:14px Arial,sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.25);text-align:right';
   panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>סדר מהמודל – הורדה</b>' +
-    '<span><button data-a="gear" title="הגדרות" style="border:0;background:none;font-size:17px;cursor:pointer">⚙</button>' +
-    '<button data-a="close" title="סגירה" style="border:0;background:none;font-size:17px;cursor:pointer">✕</button></span></div>' +
+    '<span><button data-a="gear" title="הגדרות" style="border:0;background:none;color:#0b4f8a;font-size:17px;cursor:pointer">⚙</button>' +
+    '<button data-a="close" title="סגירה" style="border:0;background:none;color:#0b4f8a;font-size:17px;cursor:pointer">✕</button></span></div>' +
     '<div data-r="gear" style="display:none;background:#f2f6fa;border-radius:8px;padding:8px;margin-bottom:8px"></div>' +
     '<div data-r="body"></div><div data-r="status" style="margin-top:8px"></div>' +
     '<pre data-r="log" style="display:none;white-space:pre-wrap;font:12px monospace;max-height:160px;overflow:auto;background:#f5f7fa;padding:6px;margin:8px 0 0"></pre>';

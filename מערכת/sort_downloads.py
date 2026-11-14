@@ -25,7 +25,7 @@ import argparse, datetime, hashlib, json, os, platform, re, shutil, subprocess, 
 from collections import Counter
 from pathlib import Path
 
-VERSION = "6.5.1"
+VERSION = "6.5.2"
 FROZEN = getattr(sys, "frozen", False)             # True in the no-Python build (made with PyInstaller)
 for _s in (sys.stdin, sys.stdout, sys.stderr):     # None when running hidden in the background
     if _s and sys.platform == "win32" and not _s.isatty():
@@ -452,14 +452,7 @@ def existing_index(dest, downloads, max_age=6 * 3600):
 def build_plan(downloads, dest, s, only=None):
     """Read the manifests and decide, for every file, what to do. Moves nothing."""
     manifests = sorted(only) if only is not None else sorted(downloads.glob("moodle_manifest_*.json"))
-    by_hash = {}                                              # fingerprint -> real file in Downloads (finds Chrome's "(1)" copies too)
-    for f in downloads.iterdir():
-        if f.is_file() and not f.is_symlink() and not f.name.startswith("moodle_manifest_"):
-            try:
-                by_hash.setdefault(sha256_of(f), f)
-            except OSError:                                   # open in another program right now: skip it this time
-                pass
-    plan, good, found = [], [], None
+    loaded, sizes = [], set()                                 # sizes: only a file of one of these sizes can be a manifest's file
     for m in manifests:
         try:
             info = json.loads(m.read_text(encoding="utf-8"))
@@ -468,18 +461,42 @@ def build_plan(downloads, dest, s, only=None):
         except Exception:
             print(f"⚠ קובץ manifest פגום, מדלג: {m.name}")
             continue
+        loaded.append((m, info, files))
+        for e in files:
+            if isinstance(e, dict) and sizes is not None:
+                n = e.get("size")
+                if isinstance(n, int) and not isinstance(n, bool) and n >= 0:
+                    sizes.add(n)
+                else:                                         # a manifest without sizes: every file is looked at, as before
+                    sizes = None
+
+    def maybe(f):                                             # a fingerprint reads the whole file (and brings it down from
+        return sizes is None or f.stat().st_size in sizes     # iCloud): taken only of files that can match by size
+
+    by_hash = {}                                              # fingerprint -> real file in Downloads (finds Chrome's "(1)" copies too)
+    for f in downloads.iterdir():
+        if f.is_file() and not f.is_symlink() and not f.name.startswith("moodle_manifest_"):
+            try:
+                if maybe(f):
+                    by_hash.setdefault(sha256_of(f), f)
+            except OSError:                                   # open in another program right now: skip it this time
+                pass
+    plan, good, found, in_course, taken = [], [], None, {}, set()
+    for m, info, files in loaded:
         good.append(m)
         course = course_folder(info, dest, s)
         course_dir = course_root(info, dest, s)
-        existing = set()                                     # fingerprints already in this year's course folder
-        if course_dir.is_dir() and inside(course_dir, dest):
-            for f in course_dir.rglob("*"):
-                try:
-                    if f.is_file() and not f.is_symlink() and not any(p in s["ignore_for_duplicates"] for p in f.relative_to(course_dir).parts):
-                        existing.add(sha256_of(f))
-                except OSError:                               # a file that can't be read now (locked): just not counted
-                    pass
-        taken = set()
+        if str(course_dir) not in in_course:                 # fingerprints already in this year's course folder: taken once,
+            existing = in_course[str(course_dir)] = set()    # also when two Moodle courses (lecture, tutorial) share the folder
+            if course_dir.is_dir() and inside(course_dir, dest):
+                for f in course_dir.rglob("*"):
+                    try:
+                        if (f.is_file() and not f.is_symlink() and maybe(f)
+                                and not any(p in s["ignore_for_duplicates"] for p in f.relative_to(course_dir).parts)):
+                            existing.add(sha256_of(f))
+                    except OSError:                           # a file that can't be read now (locked): just not counted
+                        pass
+        existing = in_course[str(course_dir)]
         for e in files:
             if not isinstance(e, dict):
                 continue
@@ -490,7 +507,7 @@ def build_plan(downloads, dest, s, only=None):
             if src is None:
                 row.update(action="missing", why="לא נמצא ב-Downloads"); plan.append(row); continue
             if sha in existing:
-                row.update(action="skip", why="כבר קיים בתיקיית הקורס", src=str(src)); plan.append(row); continue
+                row.update(action="skip", why="כבר קיים בתיקיית הקורס", src=str(src), sha=sha); plan.append(row); continue
             folder, cat = target_dir(info, e, dest, s)
             name = safe_name(clean_file_name(raw), raw) if s["filename_style"] == "clean" else raw
             mine = None                                       # the same file, already on the computer (maybe renamed)
@@ -609,16 +626,26 @@ def apply(plan, manifests, dest, keep_manifests=True):
 
 def remove_duplicates(plan, downloads, log=None):
     """Delete Downloads copies of files that were skipped because an identical copy is already sorted, and extra copies
-    the browser saved twice ("x (1).pdf") of a file that was just sorted. Only exact copies (same SHA-256)."""
-    removed = 0
+    the browser saved twice ("x (1).pdf") of a file that was just sorted or skipped. Only exact copies (same SHA-256)."""
+    removed, done = 0, {}                                     # done: fingerprint -> size, of files with a sorted identical copy
     for r in plan:
         if r["action"] == "skip" and r.get("src"):
             p = Path(r["src"])
-            if p.is_file() and not p.is_symlink() and p.parent.resolve() == downloads.resolve():
-                p.unlink(); removed += 1
-    done = {mv["sha"]: Path(mv["dst"]) for mv in (log or {}).get("moves", []) if Path(mv["dst"]).is_file()}
+            try:
+                if p.is_file() and not p.is_symlink() and p.parent.resolve() == downloads.resolve():
+                    if r.get("sha"):
+                        done[r["sha"]] = p.stat().st_size
+                    p.unlink(); removed += 1
+            except OSError:                                   # open in another program: it stays, a later run removes it
+                pass
+    for mv in (log or {}).get("moves", []):
+        try:
+            if Path(mv["dst"]).is_file():
+                done[mv["sha"]] = Path(mv["dst"]).stat().st_size
+        except OSError:
+            pass
     if done:
-        sizes = {d.stat().st_size for d in done.values()}
+        sizes = set(done.values())
         for f in downloads.iterdir():
             try:
                 if (f.is_file() and not f.is_symlink() and not f.name.startswith("moodle_manifest_") and f.stat().st_size in sizes
@@ -984,7 +1011,7 @@ def watch(s):
                 found = has_manifest(downloads)
             except PermissionError:
                 warn(no_access_text(downloads)); continue
-            if not found or not dest.is_dir():
+            if not found:
                 seen.clear(); last_sizes = None; continue
             problem = folder_problem(dest)
             if problem:
@@ -1134,9 +1161,13 @@ def runtime_cmd():
     """The command that runs the background sorter. With the no-Python program: a checked copy of it in a local folder
     (so iCloud can update the kit while it runs). None = the program in the kit is not complete yet (still syncing)."""
     bg = BIN / BG_NAME
-    if not bg.is_file():
-        return _python_cmd()
-    st = bg.stat()
+    try:
+        if not bg.is_file():
+            return _python_cmd()
+        st = bg.stat()
+    except OSError as e:                                       # not readable right now: "not ready", the sorting goes on
+        print(f"{time.strftime('%H:%M:%S')} התוכנה בתיקייה {BIN.name} לא נגישה כרגע ({e.strerror or e}).")
+        return None
     local = LOCAL_BIN / f"{VERSION}_{st.st_size}_{int(st.st_mtime)}"
     if not (local / ".ok").exists():
         tmp = LOCAL_BIN / (local.name + ".tmp")
@@ -1156,11 +1187,20 @@ def runtime_cmd():
     return [str(local / BG_NAME), "--watch", "--kit", str(KIT)]
 
 
+def _copy_dir(program):
+    """The folder directly under LOCAL_BIN that holds this program, or None. On the Mac the program is three levels
+    deeper (<copy>/MoodleSorter.app/Contents/MacOS/MoodleSorter), so its .parent is not that folder."""
+    p, root = Path(program).resolve(), LOCAL_BIN.resolve()
+    return next((a for a in p.parents if a.parent == root), None)
+
+
 def cleanup_old_copies(cmd):
-    """Remove older local copies of the program. Called only by the running sorter, after the previous one has exited."""
-    keep = {Path(sys.executable).resolve().parent} if FROZEN else set()
+    """Remove older local copies of the program. Called only by the running sorter, after the previous one has exited.
+    (Up to v6.5.1 this removed, on the Mac, the very copy the sorter was running from.)"""
+    keep = {_copy_dir(sys.executable)} if FROZEN else set()
     if cmd:
-        keep.add(Path(cmd[0]).resolve().parent)
+        keep.add(_copy_dir(cmd[0]))
+    keep.discard(None)
     if LOCAL_BIN.is_dir():
         for old in LOCAL_BIN.iterdir():
             if old.is_dir() and old.resolve() not in keep:
@@ -1205,6 +1245,17 @@ def write_launch_entry(cmd=None):
     return cmd
 
 
+# The Mac restart helper ($1 job, $2 domain, $3 plist, $4 log). "bootout" is not instant, and a "bootstrap" right after
+# it can fail ("Input/output error"), which up to v6.5.1 left the sorter off until the next install: so it is tried for
+# about half a minute, then a job that is still loaded is simply started. What launchctl says is kept in a small log
+# (without a log it still works).
+MAC_RESTART_SH = ('L="$4"; ( : >>"$L" ) 2>/dev/null || L=/dev/null; sleep 2; ' +
+                  " ".join(f'launchctl bootout "$2/{o}" 2>/dev/null;' for o in OLD_MAC_LABELS) +
+                  ' launchctl bootout "$1" 2>/dev/null; i=0; '
+                  'while [ $i -lt 15 ]; do launchctl bootstrap "$2" "$3" 2>>"$L" && exit 0; i=$((i+1)); sleep 2; done; '
+                  'launchctl kickstart "$1" 2>>"$L" || echo "$(date) restart failed" >>"$L"')
+
+
 def start_detached(cmd, restarting=False):
     if sys.platform == "win32":
         subprocess.Popen(cmd, cwd=str(Path(cmd[0]).parent), close_fds=True,
@@ -1214,9 +1265,8 @@ def start_detached(cmd, restarting=False):
     elif sys.platform == "darwin":
         plist, job = agents_dir() / f"{MAC_LABEL}.plist", f"gui/{os.getuid()}"
         if restarting:   # reload the job after this process has exited (a helper in its own session survives the bootout)
-            olds = " ".join(f'launchctl bootout "$2/{o}" 2>/dev/null;' for o in OLD_MAC_LABELS)
-            subprocess.Popen(["/bin/sh", "-c", f'sleep 2; {olds} launchctl bootout "$1" 2>/dev/null; launchctl bootstrap "$2" "$3"',
-                              "sh", f"{job}/{MAC_LABEL}", job, str(plist)], start_new_session=True,
+            subprocess.Popen(["/bin/sh", "-c", MAC_RESTART_SH, "sh", f"{job}/{MAC_LABEL}", job, str(plist),
+                              str(LOGS / f"restart_{HOST}.log")], start_new_session=True,
                              stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         elif subprocess.run(["launchctl", "bootstrap", job, str(plist)], capture_output=True).returncode != 0:
             subprocess.run(["launchctl", "load", "-w", str(plist)], capture_output=True)
@@ -1731,6 +1781,7 @@ def main():
         if problem:
             print("\n⚠ " + problem); msgbox(problem); return
     print(f"הורדות: {downloads}\nקורסים: {dest}")
+    print("בודק אילו קבצים חדשים ואילו כבר נמצאים בתיקיות הקורסים. זה יכול לקחת כמה דקות...", flush=True)
     manifests, plan = build_plan(downloads, dest, s)
     if not manifests:
         print("\nלא נמצא קובץ moodle_manifest ב-Downloads. קודם מורידים עם הכפתור 'הורד מהמודל'."); return
